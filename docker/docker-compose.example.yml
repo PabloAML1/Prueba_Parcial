@@ -1,0 +1,139 @@
+services:
+  master:
+    image: mariadb:10.6
+    container_name: master
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: root123
+    volumes:
+      - ./master/my.cnf:/etc/mysql/my.cnf
+      - master-data:/var/lib/mysql
+    ports:
+      - "3307:3306"
+
+  hospitalA:
+    image: mariadb:10.6
+    container_name: hospitalA
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: root123
+    volumes:
+      - ./hospitalA/my.cnf:/etc/mysql/my.cnf
+      - hospitalA-data:/var/lib/mysql
+    depends_on:
+      - master
+    ports:
+      - "3308:3306"
+
+  hospitalB:
+    image: mariadb:10.6
+    container_name: hospitalB
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: root123
+    volumes:
+      - ./hospitalB/my.cnf:/etc/mysql/my.cnf
+      - hospitalB-data:/var/lib/mysql
+    depends_on:
+      - master
+    ports:
+      - "3309:3306"
+
+  rabbitmq:
+    image: rabbitmq:3-management
+    container_name: rabbitmq
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    environment:
+      RABBITMQ_DEFAULT_USER: guest
+      RABBITMQ_DEFAULT_PASS: guest
+
+  admin-api:
+    build: ../backend/admin-service
+    container_name: admin-api
+    depends_on:
+      - master
+      - rabbitmq
+    environment:
+      PORT: 4000
+      DB_HOST: master
+      DB_PORT: 3306
+      DB_USER: root
+      DB_PASSWORD: root123
+      DB_NAME: hospital_db
+      RABBITMQ_URL: amqp://guest:guest@rabbitmq:5672
+    ports:
+      - "4000:4000"
+
+  consultas-hospitala-api:
+    build: ../backend/consultas-service
+    container_name: consultas-hospitala-api
+    depends_on:
+      - hospitalA
+      - rabbitmq
+    environment:
+      PORT: 4000
+      DB_HOST: hospitalA
+      DB_PORT: 3306
+      DB_USER: root
+      DB_PASSWORD: root123
+      DB_NAME: hospital_db
+      RABBITMQ_URL: amqp://guest:guest@rabbitmq:5672
+    ports:
+      - "4100:4000"
+
+  consultas-hospitalb-api:
+    build: ../backend/consultas-service
+    container_name: consultas-hospitalb-api
+    depends_on:
+      - hospitalB
+      - rabbitmq
+    environment:
+      PORT: 4000
+      DB_HOST: hospitalB
+      DB_PORT: 3306
+      DB_USER: root
+      DB_PASSWORD: root123
+      DB_NAME: hospital_db
+      RABBITMQ_URL: amqp://guest:guest@rabbitmq:5672
+    ports:
+      - "4200:4000"
+
+  users-api:
+    build: ../backend/users-service
+    container_name: users-api
+    depends_on:
+      - master
+    environment:
+      PORT: 4000
+      DB_HOST: master
+      DB_PORT: 3306
+      DB_USER: root
+      DB_PASSWORD: root123
+      DB_NAME: hospital_db
+    ports:
+      - "4300:4000"
+
+  admin-ui:
+    build: ../frontend/admin-ui
+    container_name: admin-ui
+    depends_on:
+      - admin-api
+      - users-api
+    ports:
+      - "3000:3000"
+
+  hospital-ui:
+    build: ../frontend/hospital-ui
+    container_name: hospital-ui
+    depends_on:
+      - consultas-hospitala-api
+      - consultas-hospitalb-api
+    ports:
+      - "3100:3000"
+
+volumes:
+  master-data:
+  hospitalA-data:
+  hospitalB-data:
