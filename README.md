@@ -37,7 +37,29 @@ Prueba_Parcial/
 
 - Desde a terminal ingresar al contenedor MYSQL -> docker exec -it master mysql -u root -p
 - La contraseña es root123 la cual se define en el archivo .yml
-- Ejecutar el siguiente escript solo copiando y pegando
+
+#### Dar perimisos
+Ejecutar en la base de datos master -> show master status (si el resultado es empty ralizar lo siguiente)
+├─ Ejecutar en cada base de datos lo siguiente: chmod 644 /etc/alternatives/my.cnf 
+├─ Lo mismo para los otros contenedores -> docker exec -it hospitalA mysql -u root -p (cambiar hospitalA por hopitalB para el otro contenedor)
+├─ Volver a master y verificar que devulva algo el comando -> show master status
+├─ En master dar priviligios copiando lo siguiente:
+
+CREATE USER 'repl_user'@'%' IDENTIFIED BY 'repl_pass';
+GRANT REPLICATION SLAVE ON *.* TO 'repl_user'@'%';
+FLUSH PRIVILEGES;
+
+- Ahora entrar en los contenedores de hospitalA y hospitalB (no en la master) y ejecutar lo siguiente:
+
+CHANGE MASTER TO
+  MASTER_HOST='master',
+  MASTER_USER='repl_user',
+  MASTER_PASSWORD='repl_pass',
+  MASTER_LOG_FILE='mysql-bin.000001', -- Este valor depende de lo que le salga en la primera columna del comando show master status, por lo general es el que está puesto
+  MASTER_LOG_POS=  328;  -- el valor depende del master en la segunda columna
+START SLAVE;
+
+- Ahora si pueden entrar a la base de datos master y ejecutar el siguiente escript solo copiando y pegando (Si no entendieron algo de lo anterior pueden escribirme :))
 
 === Script ===
 
@@ -84,6 +106,9 @@ CREATE TABLE consultas (
     FOREIGN KEY (id_centro) REFERENCES centros_medicos(id)
 );
 
+================================0
+
+- Pueden verificar entrando en hospitalA y hospitalB que se haya creado también la base de datos
 
 ## Cosas Por Hacer
 - Servicio de Usuarios (Login Para los meéicos)
