@@ -18,7 +18,7 @@ export const createMedico = async (req, res) => {
 export const getMedicos = async (req, res) => {
   try {
     const [rows] = await pool.query(`
-      SELECT m.id, m.nombre, e.nombre AS especialidad, c.nombre AS centro
+      SELECT m.id, m.nombre, m.especialidad_id, m.id_centro, e.nombre AS especialidad, c.nombre AS centro
       FROM medicos m
       LEFT JOIN especialidades e ON m.especialidad_id = e.id
       LEFT JOIN centros_medicos c ON m.id_centro = c.id

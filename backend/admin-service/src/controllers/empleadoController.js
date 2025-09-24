@@ -18,7 +18,7 @@ export const createEmpleado = async (req, res) => {
 export const getEmpleados = async (req, res) => {
   try {
     const [rows] = await pool.query(`
-      SELECT e.id, e.nombre, e.cargo, e.salario, c.nombre AS centro
+      SELECT e.id, e.nombre, e.cargo, e.salario, e.id_centro, c.nombre AS centro
       FROM empleados e
       LEFT JOIN centros_medicos c ON e.id_centro = c.id
     `);
