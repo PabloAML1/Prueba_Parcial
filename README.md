@@ -12,24 +12,22 @@ Este proyecto incluye un **backend en JS con node**, **frontend en React** y un 
 
 ## 📂 Estructura del proyecto
 Prueba_Parcial/
-├─ backend/ # Código del backend (Sevicios, Admin, Consultas y Usuarios)
-├─ FrontEnd/ # Interfaces en React (UI Admin y hospitales)
-├─ docker/ # Archivos de configuración Docker
+- backend/ # Código del backend (Sevicios, Admin, Consultas y Usuarios)
+- FrontEnd/ # Interfaces en React (UI Admin y hospitales)
+- docker/ # Archivos de configuración Docker
 
 
 ## Configuracion Inicial
 
 ### Node y React
-- Hay que ir por cada carpeta e ir haciendo la instalación "npm install" para que se genere node modules y las dependencias esto se hace tanto en el backend para cada servicio de node y
-- de la misma forma en la carpeta frontend para cada interfaz 
+- Hay que ir por cada carpeta e ir haciendo la instalación "npm install" para que se genere node modules y las dependencias esto se hace tanto en el backend para cada servicio de node y de la misma forma en la carpeta frontend para cada interfaz 
 
 ### Contenedores docker
 
 - Copiar el archivo de ejemplo .yml --> cp docker-compose.example.yml docker-compose.yml
-- Levantar contenedores: deben estar en la terminal desde la carpeta /docker -> docker-compose up -d --build
-- (si no funciona probar sin el guion -> docker compose up -d --build)
-- (Tal vez si se demore un poco en descargar las images desde internet y creando los contenedores)
-├─ En docker desktop se podrán ver los contenedores, pueden apagar algunos contendores para que no consuma recursos de su computadora, los necesarios para la base de datos es master, hospitalA, hospitalB
+- Levantar contenedores: deben estar en la terminal desde la carpeta /docker -> docker-compose up -d --build (si no funciona probar sin el guion -> docker compose up -d --build)
+- Tal vez si se demore un poco en descargar las images desde internet y creando los contenedores
+- En docker desktop se podrán ver los contenedores, pueden apagar algunos contendores para que no consuma recursos de su computadora, los necesarios para la base de datos es master, hospitalA, hospitalB
 
 <img width="1917" height="971" alt="image" src="https://github.com/user-attachments/assets/21a80592-73e7-46b1-8bdd-9e0f475d307d" />
 
@@ -39,30 +37,36 @@ Prueba_Parcial/
 - La contraseña es root123 la cual se define en el archivo .yml
 
 #### Dar perimisos
-Ejecutar en la base de datos master -> show master status (si el resultado es empty ralizar lo siguiente)
-├─ Ejecutar en cada base de datos lo siguiente: chmod 644 /etc/alternatives/my.cnf 
-├─ Lo mismo para los otros contenedores -> docker exec -it hospitalA mysql -u root -p (cambiar hospitalA por hopitalB para el otro contenedor)
-├─ Volver a master y verificar que devulva algo el comando -> show master status
-├─ En master dar priviligios copiando lo siguiente:
+Ejecutar en la base de datos master -> show master status (si el resultado es empty, ralizar lo siguiente)
+ - Ejecutar en cada base de datos lo siguiente -> chmod 644 /etc/alternatives/my.cnf
+ - Lo mismo para los otros contenedores -> docker exec -it hospitalA mysql -u root -p (cambiar hospitalA por hopitalB para el otro contenedor)
+ - Volver a master y verificar que devulva algo el comando -> show master status
+ - En master dar privilegios copiando lo siguiente:
 
+```md
 CREATE USER 'repl_user'@'%' IDENTIFIED BY 'repl_pass';
 GRANT REPLICATION SLAVE ON *.* TO 'repl_user'@'%';
 FLUSH PRIVILEGES;
+```
 
 - Ahora entrar en los contenedores de hospitalA y hospitalB (no en la master) y ejecutar lo siguiente:
+
+```md
 
 CHANGE MASTER TO
   MASTER_HOST='master',
   MASTER_USER='repl_user',
   MASTER_PASSWORD='repl_pass',
-  MASTER_LOG_FILE='mysql-bin.000001', -- Este valor depende de lo que le salga en la primera columna del comando show master status, por lo general es el que está puesto
+  MASTER_LOG_FILE='mysql-bin.000001', -- Este valor depende de lo que le salga en la primera columna del comando show master status, por lo general es el que está puesto<br>
   MASTER_LOG_POS=  328;  -- el valor depende del master en la segunda columna
 START SLAVE;
+```
 
 - Ahora si pueden entrar a la base de datos master y ejecutar el siguiente escript solo copiando y pegando (Si no entendieron algo de lo anterior pueden escribirme :))
 
 === Script ===
 
+```sql
 CREATE DATABASE hospital_db;
 USE hospital_db;
 
@@ -105,8 +109,8 @@ CREATE TABLE consultas (
     FOREIGN KEY (medico_id) REFERENCES medicos(id),
     FOREIGN KEY (id_centro) REFERENCES centros_medicos(id)
 );
+```
 
-================================0
 
 - Pueden verificar entrando en hospitalA y hospitalB que se haya creado también la base de datos
 
