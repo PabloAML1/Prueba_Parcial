@@ -78,7 +78,23 @@ CREATE TABLE centros_medicos (
 
 CREATE TABLE especialidades (
     id INT AUTO_INCREMENT PRIMARY KEY,
-    nombre VARCHAR(100) NOT NULL
+    nombre VARCHAR(100) NOT NULL,
+    descripcion VARCHAR(255) NOT NULL
+);
+
+CREATE TABLE users (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(100) NOT NULL,
+    email VARCHAR(100) NOT NULL UNIQUE,
+    password VARCHAR(255) NOT NULL,
+    role ENUM('ADMIN','MEDICO') DEFAULT 'MEDICO',
+    is_account_verified BOOLEAN DEFAULT 0,
+    verify_otp VARCHAR(6) DEFAULT '',
+    verify_otp_expire_at BIGINT DEFAULT 0,
+    reset_otp VARCHAR(6) DEFAULT '',
+    reset_otp_expire_at BIGINT DEFAULT 0,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );
 
 CREATE TABLE medicos (
@@ -90,14 +106,9 @@ CREATE TABLE medicos (
     FOREIGN KEY (id_centro) REFERENCES centros_medicos(id)
 );
 
-CREATE TABLE empleados (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    nombre VARCHAR(100) NOT NULL,
-    cargo VARCHAR(50),
-    salario DECIMAL(10,2),
-    id_centro INT,
-    FOREIGN KEY (id_centro) REFERENCES centros_medicos(id)
-);
+ALTER TABLE medicos
+ADD COLUMN user_id INT NOT NULL AFTER id,
+ADD CONSTRAINT fk_medicos_users FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE;
 
 CREATE TABLE consultas (
     id INT AUTO_INCREMENT PRIMARY KEY,
