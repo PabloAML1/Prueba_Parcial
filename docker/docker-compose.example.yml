@@ -11,34 +11,6 @@ services:
     ports:
       - "3307:3306"
 
-  hospitalA:
-    image: mariadb:10.6
-    container_name: hospitalA
-    restart: always
-    environment:
-      MYSQL_ROOT_PASSWORD: root123
-    volumes:
-      - ./hospitalA/my.cnf:/etc/mysql/my.cnf
-      - hospitalA-data:/var/lib/mysql
-    depends_on:
-      - master
-    ports:
-      - "3308:3306"
-
-  hospitalB:
-    image: mariadb:10.6
-    container_name: hospitalB
-    restart: always
-    environment:
-      MYSQL_ROOT_PASSWORD: root123
-    volumes:
-      - ./hospitalB/my.cnf:/etc/mysql/my.cnf
-      - hospitalB-data:/var/lib/mysql
-    depends_on:
-      - master
-    ports:
-      - "3309:3306"
-
   rabbitmq:
     image: rabbitmq:3-management
     container_name: rabbitmq
@@ -66,15 +38,15 @@ services:
     ports:
       - "4000:4000"
 
-  consultas-hospitala-api:
+  consultas-api:
     build: ../backend/consultas-service
-    container_name: consultas-hospitala-api
+    container_name: consultas-api
     depends_on:
-      - hospitalA
+      - master
       - rabbitmq
     environment:
       PORT: 4000
-      DB_HOST: hospitalA
+      DB_HOST: master
       DB_PORT: 3306
       DB_USER: root
       DB_PASSWORD: root123
@@ -82,23 +54,6 @@ services:
       RABBITMQ_URL: amqp://guest:guest@rabbitmq:5672
     ports:
       - "4100:4000"
-
-  consultas-hospitalb-api:
-    build: ../backend/consultas-service
-    container_name: consultas-hospitalb-api
-    depends_on:
-      - hospitalB
-      - rabbitmq
-    environment:
-      PORT: 4000
-      DB_HOST: hospitalB
-      DB_PORT: 3306
-      DB_USER: root
-      DB_PASSWORD: root123
-      DB_NAME: hospital_db
-      RABBITMQ_URL: amqp://guest:guest@rabbitmq:5672
-    ports:
-      - "4200:4000"
 
   users-api:
     build: ../backend/users-service
@@ -133,8 +88,7 @@ services:
     build: ../frontend/hospital-ui
     container_name: hospital-ui
     depends_on:
-      - consultas-hospitala-api
-      - consultas-hospitalb-api
+      - consultas-api
     ports:
       - "3100:5173"
 
@@ -143,13 +97,10 @@ services:
     container_name: api-gateway
     depends_on:
       - admin-api
-      - consultas-hospitala-api
-      - consultas-hospitalb-api
+      - consultas-api
       - users-api
     ports:
       - "8080:8080"
 
 volumes:
   master-data:
-  hospitalA-data:
-  hospitalB-data:
