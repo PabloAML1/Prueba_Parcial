@@ -3,10 +3,10 @@ import pool from "../config/db.js";
 // Crear especialidad
 export const createEspecialidad = async (req, res) => {
   try {
-    const { nombre } = req.body;
+    const { nombre, descripcion } = req.body;
     const [result] = await pool.query(
-      "INSERT INTO especialidades (nombre) VALUES (?)",
-      [nombre]
+      "INSERT INTO especialidades (nombre, descripcion) VALUES (?, ?)",
+      [nombre, descripcion]
     );
     res.status(201).json({ id: result.insertId, nombre });
   } catch (error) {
@@ -40,8 +40,8 @@ export const getEspecialidadById = async (req, res) => {
 export const updateEspecialidad = async (req, res) => {
   try {
     const { id } = req.params;
-    const { nombre } = req.body;
-    await pool.query("UPDATE especialidades SET nombre = ? WHERE id = ?", [nombre, id]);
+    const { nombre, descripcion } = req.body;
+    await pool.query("UPDATE especialidades SET nombre = ?, descripcion = ? WHERE id = ?", [nombre, descripcion, id]);
     res.json({ message: "Especialidad actualizada" });
   } catch (error) {
     res.status(500).json({ error: error.message });
