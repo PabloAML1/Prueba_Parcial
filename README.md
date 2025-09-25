@@ -78,8 +78,10 @@ CREATE TABLE centros_medicos (
 
 CREATE TABLE especialidades (
     id INT AUTO_INCREMENT PRIMARY KEY,
-    nombre VARCHAR(100) NOT NULL
+    nombre VARCHAR(100) NOT NULL,
+    descripcion VARCHAR(255) NOT NULL
 );
+
 CREATE TABLE users (
     id INT AUTO_INCREMENT PRIMARY KEY,
     name VARCHAR(100) NOT NULL,
