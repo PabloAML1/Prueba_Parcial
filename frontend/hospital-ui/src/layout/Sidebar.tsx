@@ -2,12 +2,9 @@ import { useContext } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
 import type { LucideIcon } from 'lucide-react';
 import {
-  Building2,
   LayoutDashboard,
   LogOut,
-  Stethoscope,
-  UserCog,
-  Users,
+  CalendarCheck
 } from 'lucide-react';
 import { Ctx } from '../features/auth/AuthContext';
 
@@ -20,10 +17,8 @@ type NavItem = {
 
 const NAV: NavItem[] = [
   { to: '/app', label: 'Dashboard', icon: LayoutDashboard, end: true },
-  { to: '/app/specialties', label: 'Specialties', icon: Stethoscope },
-  { to: '/app/hospitals', label: 'Hospitals', icon: Building2 },
-  { to: '/app/employees', label: 'Employees', icon: Users },
-  { to: '/app/doctors', label: 'Doctors', icon: UserCog },
+  { to: '/app/appointments', label: 'Appointments', icon: CalendarCheck },
+
 ];
 
 const Sidebar = () => {
