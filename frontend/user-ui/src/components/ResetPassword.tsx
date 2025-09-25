@@ -1,6 +1,4 @@
-
 import type React from "react"
-
 import { useState } from "react"
 import { Mail, ArrowLeft, CheckCircle, Lock } from "lucide-react"
 
@@ -20,18 +18,18 @@ export default function ResetPassword({ onNavigate }: ResetPasswordProps) {
   const handleEmailSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!email) {
-      setErrors({ email: "Email is required" })
+      setErrors({ email: "El correo es obligatorio" })
       return
     }
     if (!/\S+@\S+\.\S+/.test(email)) {
-      setErrors({ email: "Email is invalid" })
+      setErrors({ email: "El correo no es válido" })
       return
     }
 
     setLoading(true)
     setErrors({})
 
-    // Simulate API call
+    // Simular llamada a API
     await new Promise((resolve) => setTimeout(resolve, 2000))
 
     setLoading(false)
@@ -40,12 +38,9 @@ export default function ResetPassword({ onNavigate }: ResetPasswordProps) {
 
   const handleCodeChange = (index: number, value: string) => {
     if (value.length > 1) return
-
     const newCode = [...code]
     newCode[index] = value
     setCode(newCode)
-
-    // Auto-focus next input
     if (value && index < 5) {
       const nextInput = document.getElementById(`reset-code-${index + 1}`)
       nextInput?.focus()
@@ -63,16 +58,13 @@ export default function ResetPassword({ onNavigate }: ResetPasswordProps) {
     e.preventDefault()
     const fullCode = code.join("")
     if (fullCode.length !== 6) {
-      setErrors({ code: "Please enter the complete code" })
+      setErrors({ code: "Ingrese el código completo" })
       return
     }
 
     setLoading(true)
     setErrors({})
-
-    // Simulate API call
     await new Promise((resolve) => setTimeout(resolve, 2000))
-
     setLoading(false)
     setStep("newPassword")
   }
@@ -82,15 +74,15 @@ export default function ResetPassword({ onNavigate }: ResetPasswordProps) {
     const newErrors: Record<string, string> = {}
 
     if (!newPassword) {
-      newErrors.newPassword = "Password is required"
+      newErrors.newPassword = "La contraseña es obligatoria"
     } else if (newPassword.length < 6) {
-      newErrors.newPassword = "Password must be at least 6 characters"
+      newErrors.newPassword = "La contraseña debe tener al menos 6 caracteres"
     }
 
     if (!confirmPassword) {
-      newErrors.confirmPassword = "Please confirm your password"
+      newErrors.confirmPassword = "Confirme su contraseña"
     } else if (newPassword !== confirmPassword) {
-      newErrors.confirmPassword = "Passwords do not match"
+      newErrors.confirmPassword = "Las contraseñas no coinciden"
     }
 
     if (Object.keys(newErrors).length > 0) {
@@ -100,17 +92,10 @@ export default function ResetPassword({ onNavigate }: ResetPasswordProps) {
 
     setLoading(true)
     setErrors({})
-
-    // Simulate API call
     await new Promise((resolve) => setTimeout(resolve, 2000))
-
     setLoading(false)
     setStep("success")
-
-    // Redirect to login after success
-    setTimeout(() => {
-      onNavigate("login")
-    }, 3000)
+    setTimeout(() => onNavigate("login"), 3000)
   }
 
   if (step === "success") {
@@ -121,12 +106,12 @@ export default function ResetPassword({ onNavigate }: ResetPasswordProps) {
             <div className="w-16 h-16 bg-success/10 rounded-full flex items-center justify-center mx-auto mb-4">
               <CheckCircle className="w-8 h-8 text-success" />
             </div>
-            <h1 className="text-2xl font-bold mb-2">Password Reset!</h1>
+            <h1 className="text-2xl font-bold mb-2">¡Contraseña restablecida!</h1>
             <p className="text-muted-foreground mb-6">
-              Your password has been successfully reset. You can now sign in with your new password.
+              Su contraseña ha sido restablecida con éxito. Ahora puede iniciar sesión con su nueva contraseña.
             </p>
             <div className="w-8 h-8 border-2 border-primary/30 border-t-primary rounded-full animate-spin mx-auto" />
-            <p className="text-sm text-muted-foreground mt-4">Redirecting to login...</p>
+            <p className="text-sm text-muted-foreground mt-4">Redirigiendo al inicio de sesión...</p>
           </div>
         </div>
       </div>
@@ -136,16 +121,15 @@ export default function ResetPassword({ onNavigate }: ResetPasswordProps) {
   return (
     <div className="min-h-screen flex items-center justify-center p-4">
       <div className="w-full max-w-md">
-        {/* Back Button */}
+        {/* Botón de retroceso */}
         <button
           onClick={() => (step === "email" ? onNavigate("login") : setStep("email"))}
           className="flex items-center gap-2 text-muted-foreground hover:text-foreground mb-8 transition-colors"
         >
           <ArrowLeft className="w-4 h-4" />
-          {step === "email" ? "Back to Login" : "Back"}
+          {step === "email" ? "Volver al inicio de sesión" : "Atrás"}
         </button>
 
-        {/* Reset Password Card */}
         <div className="bg-card border border-border rounded-lg p-8">
           {step === "email" && (
             <>
@@ -153,15 +137,14 @@ export default function ResetPassword({ onNavigate }: ResetPasswordProps) {
                 <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
                   <Mail className="w-8 h-8 text-primary" />
                 </div>
-                <h1 className="text-2xl font-bold mb-2">Reset your password</h1>
+                <h1 className="text-2xl font-bold mb-2">Restablecer contraseña</h1>
                 <p className="text-muted-foreground">
-                  Enter your email address and we'll send you a code to reset your password.
+                  Ingrese su correo electrónico y le enviaremos un código para restablecer su contraseña.
                 </p>
               </div>
-
               <form onSubmit={handleEmailSubmit} className="space-y-6">
                 <div>
-                  <label className="block text-sm font-medium mb-2">Email address</label>
+                  <label className="block text-sm font-medium mb-2">Correo electrónico</label>
                   <div className="relative">
                     <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                     <input
@@ -172,12 +155,11 @@ export default function ResetPassword({ onNavigate }: ResetPasswordProps) {
                         if (errors.email) setErrors({})
                       }}
                       className="w-full pl-10 pr-4 py-3 bg-input border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-ring text-foreground placeholder-muted-foreground"
-                      placeholder="Enter your email"
+                      placeholder="Ingrese su correo"
                     />
                   </div>
                   {errors.email && <p className="text-destructive text-sm mt-1">{errors.email}</p>}
                 </div>
-
                 <button
                   type="submit"
                   disabled={loading}
@@ -186,10 +168,10 @@ export default function ResetPassword({ onNavigate }: ResetPasswordProps) {
                   {loading ? (
                     <div className="flex items-center justify-center gap-2">
                       <div className="w-4 h-4 border-2 border-primary-foreground/30 border-t-primary-foreground rounded-full animate-spin" />
-                      Sending code...
+                      Enviando código...
                     </div>
                   ) : (
-                    "Send reset code"
+                    "Enviar código de restablecimiento"
                   )}
                 </button>
               </form>
@@ -202,14 +184,13 @@ export default function ResetPassword({ onNavigate }: ResetPasswordProps) {
                 <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
                   <Mail className="w-8 h-8 text-primary" />
                 </div>
-                <h1 className="text-2xl font-bold mb-2">Enter reset code</h1>
-                <p className="text-muted-foreground">We've sent a 6-digit code to</p>
+                <h1 className="text-2xl font-bold mb-2">Ingrese el código</h1>
+                <p className="text-muted-foreground">Le hemos enviado un código de 6 dígitos a</p>
                 <p className="font-medium text-foreground">{email}</p>
               </div>
-
               <form onSubmit={handleCodeSubmit} className="space-y-6">
                 <div>
-                  <label className="block text-sm font-medium mb-4 text-center">Enter verification code</label>
+                  <label className="block text-sm font-medium mb-4 text-center">Ingrese el código de verificación</label>
                   <div className="flex gap-2 justify-center">
                     {code.map((digit, index) => (
                       <input
@@ -227,7 +208,6 @@ export default function ResetPassword({ onNavigate }: ResetPasswordProps) {
                   </div>
                   {errors.code && <p className="text-destructive text-sm mt-2 text-center">{errors.code}</p>}
                 </div>
-
                 <button
                   type="submit"
                   disabled={loading}
@@ -236,10 +216,10 @@ export default function ResetPassword({ onNavigate }: ResetPasswordProps) {
                   {loading ? (
                     <div className="flex items-center justify-center gap-2">
                       <div className="w-4 h-4 border-2 border-primary-foreground/30 border-t-primary-foreground rounded-full animate-spin" />
-                      Verifying...
+                      Verificando...
                     </div>
                   ) : (
-                    "Verify code"
+                    "Verificar código"
                   )}
                 </button>
               </form>
@@ -252,13 +232,12 @@ export default function ResetPassword({ onNavigate }: ResetPasswordProps) {
                 <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
                   <Lock className="w-8 h-8 text-primary" />
                 </div>
-                <h1 className="text-2xl font-bold mb-2">Set new password</h1>
-                <p className="text-muted-foreground">Create a new password for your account.</p>
+                <h1 className="text-2xl font-bold mb-2">Establecer nueva contraseña</h1>
+                <p className="text-muted-foreground">Cree una nueva contraseña para su cuenta.</p>
               </div>
-
               <form onSubmit={handlePasswordSubmit} className="space-y-6">
                 <div>
-                  <label className="block text-sm font-medium mb-2">New Password</label>
+                  <label className="block text-sm font-medium mb-2">Nueva contraseña</label>
                   <div className="relative">
                     <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                     <input
@@ -269,14 +248,13 @@ export default function ResetPassword({ onNavigate }: ResetPasswordProps) {
                         if (errors.newPassword) setErrors((prev) => ({ ...prev, newPassword: "" }))
                       }}
                       className="w-full pl-10 pr-4 py-3 bg-input border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-ring text-foreground placeholder-muted-foreground"
-                      placeholder="Enter new password"
+                      placeholder="Ingrese nueva contraseña"
                     />
                   </div>
                   {errors.newPassword && <p className="text-destructive text-sm mt-1">{errors.newPassword}</p>}
                 </div>
-
                 <div>
-                  <label className="block text-sm font-medium mb-2">Confirm New Password</label>
+                  <label className="block text-sm font-medium mb-2">Confirmar nueva contraseña</label>
                   <div className="relative">
                     <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                     <input
@@ -287,12 +265,11 @@ export default function ResetPassword({ onNavigate }: ResetPasswordProps) {
                         if (errors.confirmPassword) setErrors((prev) => ({ ...prev, confirmPassword: "" }))
                       }}
                       className="w-full pl-10 pr-4 py-3 bg-input border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-ring text-foreground placeholder-muted-foreground"
-                      placeholder="Confirm new password"
+                      placeholder="Confirme nueva contraseña"
                     />
                   </div>
                   {errors.confirmPassword && <p className="text-destructive text-sm mt-1">{errors.confirmPassword}</p>}
                 </div>
-
                 <button
                   type="submit"
                   disabled={loading}
@@ -301,10 +278,10 @@ export default function ResetPassword({ onNavigate }: ResetPasswordProps) {
                   {loading ? (
                     <div className="flex items-center justify-center gap-2">
                       <div className="w-4 h-4 border-2 border-primary-foreground/30 border-t-primary-foreground rounded-full animate-spin" />
-                      Updating password...
+                      Actualizando contraseña...
                     </div>
                   ) : (
-                    "Update password"
+                    "Actualizar contraseña"
                   )}
                 </button>
               </form>

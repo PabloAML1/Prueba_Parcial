@@ -1,6 +1,4 @@
-
 import type React from "react"
-
 import { useState, useEffect } from "react"
 import { Mail, ArrowLeft, CheckCircle } from "lucide-react"
 
@@ -24,12 +22,10 @@ export default function EmailVerify({ email, onNavigate }: EmailVerifyProps) {
 
   const handleCodeChange = (index: number, value: string) => {
     if (value.length > 1) return
-
     const newCode = [...code]
     newCode[index] = value
     setCode(newCode)
 
-    // Auto-focus next input
     if (value && index < 5) {
       const nextInput = document.getElementById(`code-${index + 1}`)
       nextInput?.focus()
@@ -49,14 +45,11 @@ export default function EmailVerify({ email, onNavigate }: EmailVerifyProps) {
     if (fullCode.length !== 6) return
 
     setLoading(true)
-
-    // Simulate API call
     await new Promise((resolve) => setTimeout(resolve, 2000))
 
     setVerified(true)
     setLoading(false)
 
-    // Redirect to home after success
     setTimeout(() => {
       onNavigate("home")
     }, 2000)
@@ -64,7 +57,6 @@ export default function EmailVerify({ email, onNavigate }: EmailVerifyProps) {
 
   const handleResend = async () => {
     setResendCooldown(60)
-    // Simulate resend API call
     await new Promise((resolve) => setTimeout(resolve, 1000))
   }
 
@@ -76,9 +68,9 @@ export default function EmailVerify({ email, onNavigate }: EmailVerifyProps) {
             <div className="w-16 h-16 bg-success/10 rounded-full flex items-center justify-center mx-auto mb-4">
               <CheckCircle className="w-8 h-8 text-success" />
             </div>
-            <h1 className="text-2xl font-bold mb-2">Email Verified!</h1>
+            <h1 className="text-2xl font-bold mb-2">¡Correo verificado!</h1>
             <p className="text-muted-foreground mb-6">
-              Your account has been successfully verified. Redirecting you to the dashboard...
+              Tu cuenta de paciente ha sido verificada exitosamente. Redirigiendo al panel de la clínica...
             </p>
             <div className="w-8 h-8 border-2 border-success/30 border-t-success rounded-full animate-spin mx-auto" />
           </div>
@@ -90,29 +82,27 @@ export default function EmailVerify({ email, onNavigate }: EmailVerifyProps) {
   return (
     <div className="min-h-screen flex items-center justify-center p-4">
       <div className="w-full max-w-md">
-        {/* Back Button */}
         <button
           onClick={() => onNavigate("login")}
           className="flex items-center gap-2 text-muted-foreground hover:text-foreground mb-8 transition-colors"
         >
           <ArrowLeft className="w-4 h-4" />
-          Back to Login
+          Volver al inicio
         </button>
 
-        {/* Verification Card */}
         <div className="bg-card border border-border rounded-lg p-8">
           <div className="text-center mb-8">
             <div className="w-16 h-16 bg-blue-500/10 rounded-full flex items-center justify-center mx-auto mb-4">
               <Mail className="w-8 h-8 text-blue-500" />
             </div>
-            <h1 className="text-2xl font-bold mb-2">Verify your email</h1>
-            <p className="text-muted-foreground">We've sent a 6-digit verification code to</p>
+            <h1 className="text-2xl font-bold mb-2">Verifica tu correo</h1>
+            <p className="text-muted-foreground">Hemos enviado un código de verificación de 6 dígitos a</p>
             <p className="font-medium text-foreground">{email}</p>
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-6">
             <div>
-              <label className="block text-sm font-medium mb-4 text-center">Enter verification code</label>
+              <label className="block text-sm font-medium mb-4 text-center">Ingresa el código de verificación</label>
               <div className="flex gap-2 justify-center">
                 {code.map((digit, index) => (
                   <input
@@ -138,22 +128,22 @@ export default function EmailVerify({ email, onNavigate }: EmailVerifyProps) {
               {loading ? (
                 <div className="flex items-center justify-center gap-2">
                   <div className="w-4 h-4 border-2 border-primary-foreground/30 border-t-primary-foreground rounded-full animate-spin" />
-                  Verifying...
+                  Verificando...
                 </div>
               ) : (
-                "Verify Email"
+                "Verificar correo"
               )}
             </button>
           </form>
 
           <div className="mt-6 text-center">
-            <p className="text-muted-foreground mb-2">Didn't receive the code?</p>
+            <p className="text-muted-foreground mb-2">¿No recibiste el código?</p>
             <button
               onClick={handleResend}
               disabled={resendCooldown > 0}
               className="text-foreground hover:underline font-medium disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {resendCooldown > 0 ? `Resend in ${resendCooldown}s` : "Resend code"}
+              {resendCooldown > 0 ? `Reenviar en ${resendCooldown}s` : "Reenviar código"}
             </button>
           </div>
         </div>

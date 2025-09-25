@@ -1,6 +1,4 @@
-
 import type React from "react"
-
 import { useState } from "react"
 import { Mail, Lock, User, Eye, EyeOff, ArrowRight } from "lucide-react"
 
@@ -25,25 +23,25 @@ export default function Login({ onNavigate }: LoginProps) {
     const newErrors: Record<string, string> = {}
 
     if (!formData.email) {
-      newErrors.email = "Email is required"
+      newErrors.email = "El correo es obligatorio"
     } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
-      newErrors.email = "Email is invalid"
+      newErrors.email = "El correo no es válido"
     }
 
     if (!formData.password) {
-      newErrors.password = "Password is required"
+      newErrors.password = "La contraseña es obligatoria"
     } else if (formData.password.length < 6) {
-      newErrors.password = "Password must be at least 6 characters"
+      newErrors.password = "La contraseña debe tener al menos 6 caracteres"
     }
 
     if (!isLogin) {
       if (!formData.name) {
-        newErrors.name = "Name is required"
+        newErrors.name = "El nombre completo es obligatorio"
       }
       if (!formData.confirmPassword) {
-        newErrors.confirmPassword = "Please confirm your password"
+        newErrors.confirmPassword = "Confirme su contraseña"
       } else if (formData.password !== formData.confirmPassword) {
-        newErrors.confirmPassword = "Passwords do not match"
+        newErrors.confirmPassword = "Las contraseñas no coinciden"
       }
     }
 
@@ -57,14 +55,12 @@ export default function Login({ onNavigate }: LoginProps) {
 
     setLoading(true)
 
-    // Simulate API call
+    // Simular llamada a API
     await new Promise((resolve) => setTimeout(resolve, 2000))
 
     if (isLogin) {
-      // Simulate successful login
       onNavigate("home")
     } else {
-      // Simulate successful registration - go to email verification
       onNavigate("emailVerify", formData.email)
     }
 
@@ -81,24 +77,26 @@ export default function Login({ onNavigate }: LoginProps) {
   return (
     <div className="min-h-screen flex items-center justify-center p-4">
       <div className="w-full max-w-md">
-        {/* Header */}
+        {/* Encabezado */}
         <div className="text-center mb-8">
           <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center mx-auto mb-4">
             <div className="w-6 h-6 bg-primary rounded-sm" />
           </div>
-          <h1 className="text-2xl font-bold mb-2">{isLogin ? "Welcome back" : "Create your account"}</h1>
+          <h1 className="text-2xl font-bold mb-2">
+            {isLogin ? "Bienvenido de nuevo" : "Crea tu cuenta"}
+          </h1>
           <p className="text-muted-foreground">
-            {isLogin ? "Sign in to your account to continue" : "Get started with your free account"}
+            {isLogin
+              ? "Inicia sesión en el portal de la clínica"
+              : "Comienza con tu cuenta gratuita"}
           </p>
         </div>
 
-        {/* Form Card */}
         <div className="bg-card border border-border rounded-lg p-6">
           <form onSubmit={handleSubmit} className="space-y-4">
-            {/* Name field (only for registration) */}
             {!isLogin && (
               <div>
-                <label className="block text-sm font-medium mb-2">Full Name</label>
+                <label className="block text-sm font-medium mb-2">Nombre completo</label>
                 <div className="relative">
                   <User className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                   <input
@@ -106,16 +104,15 @@ export default function Login({ onNavigate }: LoginProps) {
                     value={formData.name}
                     onChange={(e) => handleInputChange("name", e.target.value)}
                     className="w-full pl-10 pr-4 py-3 bg-input border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-ring text-foreground placeholder-muted-foreground"
-                    placeholder="Enter your full name"
+                    placeholder="Ingresa tu nombre completo"
                   />
                 </div>
                 {errors.name && <p className="text-destructive text-sm mt-1">{errors.name}</p>}
               </div>
             )}
 
-            {/* Email field */}
             <div>
-              <label className="block text-sm font-medium mb-2">Email</label>
+              <label className="block text-sm font-medium mb-2">Correo electrónico</label>
               <div className="relative">
                 <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                 <input
@@ -123,15 +120,14 @@ export default function Login({ onNavigate }: LoginProps) {
                   value={formData.email}
                   onChange={(e) => handleInputChange("email", e.target.value)}
                   className="w-full pl-10 pr-4 py-3 bg-input border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-ring text-foreground placeholder-muted-foreground"
-                  placeholder="Enter your email"
+                  placeholder="Ingresa tu correo"
                 />
               </div>
               {errors.email && <p className="text-destructive text-sm mt-1">{errors.email}</p>}
             </div>
 
-            {/* Password field */}
             <div>
-              <label className="block text-sm font-medium mb-2">Password</label>
+              <label className="block text-sm font-medium mb-2">Contraseña</label>
               <div className="relative">
                 <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                 <input
@@ -139,7 +135,7 @@ export default function Login({ onNavigate }: LoginProps) {
                   value={formData.password}
                   onChange={(e) => handleInputChange("password", e.target.value)}
                   className="w-full pl-10 pr-12 py-3 bg-input border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-ring text-foreground placeholder-muted-foreground"
-                  placeholder="Enter your password"
+                  placeholder="Ingresa tu contraseña"
                 />
                 <button
                   type="button"
@@ -152,10 +148,9 @@ export default function Login({ onNavigate }: LoginProps) {
               {errors.password && <p className="text-destructive text-sm mt-1">{errors.password}</p>}
             </div>
 
-            {/* Confirm Password field (only for registration) */}
             {!isLogin && (
               <div>
-                <label className="block text-sm font-medium mb-2">Confirm Password</label>
+                <label className="block text-sm font-medium mb-2">Confirmar contraseña</label>
                 <div className="relative">
                   <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                   <input
@@ -163,7 +158,7 @@ export default function Login({ onNavigate }: LoginProps) {
                     value={formData.confirmPassword}
                     onChange={(e) => handleInputChange("confirmPassword", e.target.value)}
                     className="w-full pl-10 pr-12 py-3 bg-input border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-ring text-foreground placeholder-muted-foreground"
-                    placeholder="Confirm your password"
+                    placeholder="Confirma tu contraseña"
                   />
                   <button
                     type="button"
@@ -173,11 +168,12 @@ export default function Login({ onNavigate }: LoginProps) {
                     {showConfirmPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                   </button>
                 </div>
-                {errors.confirmPassword && <p className="text-destructive text-sm mt-1">{errors.confirmPassword}</p>}
+                {errors.confirmPassword && (
+                  <p className="text-destructive text-sm mt-1">{errors.confirmPassword}</p>
+                )}
               </div>
             )}
 
-            {/* Forgot Password Link (only for login) */}
             {isLogin && (
               <div className="text-right">
                 <button
@@ -185,12 +181,11 @@ export default function Login({ onNavigate }: LoginProps) {
                   onClick={() => onNavigate("resetPassword")}
                   className="text-primary hover:underline text-sm"
                 >
-                  Forgot password?
+                  ¿Olvidaste tu contraseña?
                 </button>
               </div>
             )}
 
-            {/* Submit Button */}
             <button
               type="submit"
               disabled={loading}
@@ -200,17 +195,16 @@ export default function Login({ onNavigate }: LoginProps) {
                 <div className="w-4 h-4 border-2 border-primary-foreground/30 border-t-primary-foreground rounded-full animate-spin" />
               ) : (
                 <>
-                  {isLogin ? "Sign In" : "Create Account"}
+                  {isLogin ? "Iniciar sesión" : "Crear cuenta"}
                   <ArrowRight className="w-4 h-4" />
                 </>
               )}
             </button>
           </form>
 
-          {/* Toggle between login and register */}
           <div className="mt-6 text-center">
             <p className="text-muted-foreground">
-              {isLogin ? "Don't have an account?" : "Already have an account?"}
+              {isLogin ? "¿No tienes una cuenta?" : "¿Ya tienes una cuenta?"}
               <button
                 onClick={() => {
                   setIsLogin(!isLogin)
@@ -219,7 +213,7 @@ export default function Login({ onNavigate }: LoginProps) {
                 }}
                 className="text-primary hover:underline ml-1 font-medium"
               >
-                {isLogin ? "Sign up" : "Sign in"}
+                {isLogin ? "Regístrate" : "Inicia sesión"}
               </button>
             </p>
           </div>
