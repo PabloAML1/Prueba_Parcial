@@ -1,12 +1,25 @@
 import express from "express";
+import cors from "cors";
+import "dotenv/config";
+import cookieParser from "cookie-parser";
+import authRouter from "./routes/authRoutes.js";
+import userRouter from "./routes/userRoutes.js";
 
 const app = express();
+const PORT = process.env.PORT || 3000;
 app.use(express.json());
+app.use(cookieParser());
+app.use(
+  cors({
+    origin: true, // acepta cualquier origen dinámicamente
+    credentials: true,
+  })
+);
 
 app.get("/", (req, res) => {
-  res.send("users Service is running 🚑");
+  res.send("API working");
 });
+app.use("/auth", authRouter);
+app.use("/user", userRouter);
 
-app.listen(4000, () => {
-  console.log("Users Service running on port 4000");
-});
+app.listen(PORT, () => console.log(`Server running on port ${PORT}`));

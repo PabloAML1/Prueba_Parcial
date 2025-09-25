@@ -112,6 +112,11 @@ services:
       DB_USER: root
       DB_PASSWORD: root123
       DB_NAME: hospital_db
+      JWT_SECRET: secret#text
+      NODE_ENV: development
+      SMTP_USER: 95e7ab001@smtp-brevo.com
+      SMTP_PASS: mQRVFGvASkcLtNgj
+      SENDER_EMAIL: garciadayle2004@gmail.com
     ports:
       - "4300:4000"
 
@@ -132,6 +137,17 @@ services:
       - consultas-hospitalb-api
     ports:
       - "3100:3000"
+
+  api-gateway:
+    build: ../backend/api-gateway
+    container_name: api-gateway
+    depends_on:
+      - admin-api
+      - consultas-hospitala-api
+      - consultas-hospitalb-api
+      - users-api
+    ports:
+      - "8080:8080"
 
 volumes:
   master-data:
