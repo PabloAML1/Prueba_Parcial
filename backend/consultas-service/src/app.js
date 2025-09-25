@@ -7,7 +7,7 @@ const app = express();
 app.use(express.json());
 
 // Rutas
-app.use("/api/consultas", consultaRoutes);
+app.use("/consultas", consultaRoutes);
 
 const PORT = process.env.PORT;
 app.listen(PORT, () => {

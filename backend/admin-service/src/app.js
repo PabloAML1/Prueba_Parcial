@@ -10,12 +10,13 @@ const app = express();
 app.use(express.json());
 
 // Rutas
-app.use("/api/centros", centroRoutes);
-app.use("/api/especialidades", especialidadRoutes);
-app.use("/api/medicos", medicoRoutes);
-app.use("/api/empleados", empleadoRoutes);
+app.use("/centros", centroRoutes);
+app.use("/especialidades", especialidadRoutes);
+app.use("/medicos", medicoRoutes);
+app.use("/empleados", empleadoRoutes);
 
 const PORT = process.env.PORT;
-app.listen(PORT, () => {
+// IMPORTANTE: Escuchar en '0.0.0.0' para que sea accesible desde otros contenedores.
+app.listen(PORT, '0.0.0.0', () => {
   console.log(`Admin-Service corriendo en puerto ${PORT}`);
 });
