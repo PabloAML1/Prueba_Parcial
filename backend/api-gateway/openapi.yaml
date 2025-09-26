@@ -1,0 +1,412 @@
+openapi: 3.0.0
+info:
+  title: API Gateway - Hospital
+  version: 1.0.0
+  description: |
+    Documentación centralizada del API Gateway que integra:
+    - Admin Service
+    - Consultas Médicas Service
+    - Users Service
+servers:
+  - url: http://localhost:8080/api
+    description: API Gateway local
+
+paths:
+  # --- Consultas Médicas ---
+  /consultas-medicas/consultas:
+    get:
+      summary: Listar consultas médicas
+      responses:
+        "200":
+          description: Lista de consultas
+    post:
+      summary: Crear una nueva consulta médica
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                fecha:
+                  type: string
+                  format: date
+                descripcion:
+                  type: string
+                medico_id:
+                  type: integer
+                paciente_nombre:
+                  type: string
+                id_centro:
+                  type: integer
+              required: [fecha, medico_id, paciente_nombre, id_centro]
+      responses:
+        "201":
+          description: Consulta creada
+  /consultas-medicas/consultas/{id}:
+    put:
+      summary: Actualizar consulta médica
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: integer
+          required: true
+          description: ID de la consulta a actualizar
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                fecha:
+                  type: string
+                  format: date
+                descripcion:
+                  type: string
+                medico_id:
+                  type: integer
+                paciente_nombre:
+                  type: string
+                id_centro:
+                  type: integer
+      responses:
+        "200":
+          description: Consulta actualizada
+    delete:
+      summary: Eliminar consulta médica
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: integer
+          required: true
+          description: ID de la consulta a eliminar
+      responses:
+        "200":
+          description: Consulta eliminada
+
+  # --- Admin Service ---
+  /admin/centros:
+    get:
+      summary: Listar centros médicos
+      responses:
+        "200":
+          description: Lista de centros
+    post:
+      summary: Crear centro médico
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                nombre:
+                  type: string
+                direccion:
+                  type: string
+              required: [nombre, direccion]
+      responses:
+        "201":
+          description: Centro creado
+  /admin/centros/{id}:
+    put:
+      summary: Actualizar centro médico
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: integer
+          required: true
+          description: ID del centro a actualizar
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                nombre:
+                  type: string
+                direccion:
+                  type: string
+              required: [nombre, direccion]
+      responses:
+        "200":
+          description: Centro actualizado
+    delete:
+      summary: Eliminar centro médico
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: integer
+          required: true
+          description: ID del centro a eliminar
+      responses:
+        "200":
+          description: Centro eliminado
+
+  /admin/especialidades:
+    get:
+      summary: Listar especialidades médicas
+      responses:
+        "200":
+          description: Lista de especialidades
+    post:
+      summary: Crear especialidad
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                nombre:
+                  type: string
+                descripcion:
+                  type: string
+              required: [nombre, descripcion]
+      responses:
+        "201":
+          description: Especialidad creada
+  /admin/especialidades/{id}:
+    put:
+      summary: Actualizar especialidad
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: integer
+          required: true
+          description: ID de la especialidad a actualizar
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                nombre:
+                  type: string
+                descripcion:
+                  type: string
+              required: [nombre, descripcion]
+      responses:
+        "200":
+          description: Especialidad actualizada
+    delete:
+      summary: Eliminar especialidad
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: integer
+          required: true
+          description: ID de la especialidad a eliminar
+      responses:
+        "200":
+          description: Especialidad eliminada
+
+  /admin/medicos:
+    get:
+      summary: Listar médicos
+      responses:
+        "200":
+          description: Lista de médicos
+    post:
+      summary: Crear médico
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                nombre:
+                  type: string
+                user_id:
+                  type: integer
+                especialidad_id:
+                  type: integer
+                id_centro:
+                  type: integer
+              required: [nombre, user_id, especialidad_id, id_centro]
+      responses:
+        "201":
+          description: Médico creado
+  /admin/medicos/{id}:
+    put:
+      summary: Actualizar médico
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: integer
+          required: true
+          description: ID del médico a actualizar
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                nombre:
+                  type: string
+                user_id:
+                  type: integer
+                especialidad_id:
+                  type: integer
+                id_centro:
+                  type: integer
+              required: [nombre, user_id, especialidad_id, id_centro]
+      responses:
+        "200":
+          description: Médico actualizado
+    delete:
+      summary: Eliminar médico
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: integer
+          required: true
+          description: ID del médico a eliminar
+      responses:
+        "200":
+          description: Médico eliminado
+
+  /admin/empleados:
+    get:
+      summary: Listar empleados
+      responses:
+        "200":
+          description: Lista de empleados
+    post:
+      summary: Crear empleado
+      responses:
+        "201":
+          description: Empleado creado
+  /admin/empleados/{id}:
+    put:
+      summary: Actualizar empleado
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: integer
+          required: true
+          description: ID del empleado a actualizar
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        "200":
+          description: Empleado actualizado
+    delete:
+      summary: Eliminar empleado
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: integer
+          required: true
+          description: ID del empleado a eliminar
+      responses:
+        "200":
+          description: Empleado eliminado
+
+  # --- Users Service ---
+  /users/auth/register:
+    post:
+      summary: Registro de usuario
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                email:
+                  type: string
+                password:
+                  type: string
+                especialidad_id:
+                  type: integer
+                id_centro:
+                  type: integer
+              required: [name, email, password, especialidad_id, id_centro]
+      responses:
+        "201":
+          description: Usuario creado
+  /users/auth/login:
+    post:
+      summary: Login de usuario
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                password:
+                  type: string
+              required: [email, password]
+      responses:
+        "200":
+          description: Login exitoso
+        "401":
+          description: Credenciales inválidas
+  /users/auth/logout:
+    post:
+      summary: Logout de usuario
+      responses:
+        "200":
+          description: Logout exitoso
+  /users/auth/send-verify-otp:
+    post:
+      summary: Enviar OTP para verificación de cuenta
+      responses:
+        "200":
+          description: OTP enviado
+  /users/auth/verify-account:
+    post:
+      summary: Verificar correo/OTP
+      responses:
+        "200":
+          description: Cuenta verificada
+  /users/auth/is-auth:
+    get:
+      summary: Verificar si el usuario está autenticado
+      responses:
+        "200":
+          description: Usuario autenticado
+  /users/auth/send-reset-otp:
+    post:
+      summary: Enviar OTP para reset de contraseña
+      responses:
+        "200":
+          description: OTP enviado
+  /users/auth/reset-password:
+    post:
+      summary: Resetear contraseña
+      responses:
+        "200":
+          description: Contraseña reseteada
+
+  /users/user/data:
+    get:
+      summary: Obtener perfil de usuario
+      responses:
+        "200":
+          description: Datos del usuario
