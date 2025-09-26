@@ -102,16 +102,5 @@ services:
     ports:
       - "8080:8080"
 
-  api-gateway:
-    build: ../backend/api-gateway
-    container_name: api-gateway
-    depends_on:
-      - admin-api
-      - consultas-hospitala-api
-      - consultas-hospitalb-api
-      - users-api
-    ports:
-      - "8080:8080"
-
 volumes:
   master-data:

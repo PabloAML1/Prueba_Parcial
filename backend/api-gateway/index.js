@@ -13,16 +13,10 @@ app.use((req, res, next) => {
 });
 
 // ---- Proxies ----
-app.use("/api/hospitalA", createProxyMiddleware({
-  target: "http://consultas-hospitala-api:4000",
+app.use("/api/consultas-medicas", createProxyMiddleware({
+  target: "http://consultas-api:4000",
   changeOrigin: true,
-  pathRewrite: { "^/api/hospitalA": "/api/consultas" }
-}));
-
-app.use("/api/hospitalB", createProxyMiddleware({
-  target: "http://consultas-hospitalb-api:4000",
-  changeOrigin: true,
-  pathRewrite: { "^/api/hospitalB": "/api/consultas" }
+  pathRewrite: { "^/api/consultas-medicas": "" }
 }));
 
 app.use("/api/admin", createProxyMiddleware({
