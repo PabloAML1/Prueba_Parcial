@@ -1,4 +1,4 @@
-const RAW_BASE_URL = import.meta.env.VITE_ADMIN_API_URL ?? "http://localhost:4000/api";
+const RAW_BASE_URL = "http://localhost:8080/api";
 const BASE_URL = RAW_BASE_URL.replace(/\/?$/, "");
 
 export interface ApiRequestOptions extends RequestInit {

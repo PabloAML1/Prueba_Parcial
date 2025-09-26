@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+﻿import { useEffect, useMemo, useState } from "react";
 import Toolbar from "../../components/Toolbar";
 import { DataTable, type DataTableColumn } from "../../components/Table";
 import Paginator from "../../components/Paginator";
@@ -12,18 +12,42 @@ import {
   useUpdateDoctor,
   useDeleteDoctor,
   type Doctor,
+  type DoctorCreatePayload,
+  type DoctorUpdatePayload,
 } from "./api";
 import { useHospitals } from "../hospitals/api";
 import { useSpecialties } from "../specialties/api";
 
 interface DoctorFormValues extends Record<string, unknown> {
   name: string;
+  email: string;
+  password: string;
   specialtyId: string;
   centerId: string;
 }
 
+const PASSWORD_PREVIEW_LENGTH = 12;
+
+const passwordPreview = (value: string) => {
+  if (!value) {
+    return "-";
+  }
+
+  if (value.length <= PASSWORD_PREVIEW_LENGTH) {
+    return value;
+  }
+
+  return `${value.slice(0, PASSWORD_PREVIEW_LENGTH)}…`;
+};
+
 const columns: DataTableColumn<Doctor>[] = [
   { id: "name", header: "Name", field: "name" },
+  { id: "email", header: "Email", field: "email" },
+  {
+    id: "password",
+    header: "Password",
+    cell: (row) => passwordPreview(row.password),
+  },
   { id: "specialty", header: "Specialty", field: "specialtyName" },
   { id: "center", header: "Center", field: "centerName" },
 ];
@@ -33,6 +57,8 @@ const actionButtonClasses =
 
 const emptyForm: DoctorFormValues = {
   name: "",
+  email: "",
+  password: "",
   specialtyId: "",
   centerId: "",
 };
@@ -43,6 +69,25 @@ const toTrimmedString = (value: unknown) =>
     : value === undefined || value === null
     ? ""
     : String(value);
+
+const resolveNumericField = (
+  rawValue: unknown,
+  currentValue: number | null,
+  message: string
+) => {
+  if (rawValue === undefined || rawValue === "") {
+    if (currentValue && currentValue > 0) {
+      return currentValue;
+    }
+    throw new Error(message);
+  }
+
+  const numeric = Number(rawValue);
+  if (!Number.isFinite(numeric) || numeric <= 0) {
+    throw new Error(message);
+  }
+  return numeric;
+};
 
 const DoctorsPage = () => {
   const { data: doctors = [], isLoading, isError, error } = useDoctors();
@@ -71,7 +116,7 @@ const DoctorsPage = () => {
     [specialties]
   );
 
-  const formFields: FormFieldConfig<DoctorFormValues>[] = useMemo(
+  const createFields: FormFieldConfig<DoctorFormValues>[] = useMemo(
     () => [
       {
         name: "name",
@@ -79,6 +124,70 @@ const DoctorsPage = () => {
         placeholder: "Enter doctor's name",
         required: true,
         autoFocus: true,
+      },
+      {
+        name: "email",
+        label: "Email",
+        type: "email",
+        placeholder: "doctor@example.com",
+        required: true,
+      },
+      {
+        name: "password",
+        label: "Password",
+        type: "password",
+        placeholder: "Provide a temporary password",
+        required: true,
+        description: "Share this password securely with the doctor.",
+      },
+      {
+        name: "specialtyId",
+        label: "Specialty",
+        type: "select",
+        placeholder: specialtyOptions.length
+          ? "Select a specialty"
+          : "No specialties available",
+        options: specialtyOptions,
+        required: true,
+        disabled: specialtiesLoading || specialtyOptions.length === 0,
+      },
+      {
+        name: "centerId",
+        label: "Center",
+        type: "select",
+        placeholder: centerOptions.length
+          ? "Select a center"
+          : "No centers available",
+        options: centerOptions,
+        required: true,
+        disabled: centersLoading || centerOptions.length === 0,
+      },
+    ],
+    [centerOptions, centersLoading, specialtyOptions, specialtiesLoading]
+  );
+
+  const editFields: FormFieldConfig<DoctorFormValues>[] = useMemo(
+    () => [
+      {
+        name: "name",
+        label: "Name",
+        placeholder: "Enter doctor's name",
+        required: true,
+        autoFocus: true,
+      },
+      {
+        name: "email",
+        label: "Email",
+        type: "email",
+        placeholder: "doctor@example.com",
+        required: true,
+      },
+      {
+        name: "password",
+        label: "Password",
+        type: "password",
+        placeholder: "Leave blank to keep current password",
+        description: "Leave blank to keep the existing password.",
       },
       {
         name: "specialtyId",
@@ -119,7 +228,9 @@ const DoctorsPage = () => {
     }
 
     return doctors.filter((doctor) =>
-      `${doctor.name} ${doctor.specialtyName ?? ""} ${doctor.centerName ?? ""}`
+      `${doctor.name} ${doctor.email ?? ""} ${
+        doctor.specialtyName ?? ""
+      } ${doctor.centerName ?? ""}`
         .toLowerCase()
         .includes(term)
     );
@@ -150,26 +261,68 @@ const DoctorsPage = () => {
     setPage(1);
   };
 
-  const parseId = (value: unknown, message: string) => {
-    const numeric = Number(value);
-    if (!Number.isFinite(numeric) || numeric <= 0) {
-      throw new Error(message);
+  const buildCreatePayload = (values: FormValues<DoctorFormValues>): DoctorCreatePayload => {
+    const name = toTrimmedString(values.name);
+    const email = toTrimmedString(values.email);
+    const password = toTrimmedString(values.password);
+
+    if (!name) {
+      throw new Error("A name is required.");
     }
-    return numeric;
+    if (!email) {
+      throw new Error("An email is required.");
+    }
+    if (!password) {
+      throw new Error("A password is required.");
+    }
+
+    return {
+      name,
+      email,
+      password,
+      specialtyId: resolveNumericField(values.specialtyId, null, "A valid specialty is required."),
+      centerId: resolveNumericField(values.centerId, null, "A valid center is required."),
+    };
+  };
+
+  const buildUpdatePayload = (
+    current: Doctor,
+    values: FormValues<DoctorFormValues>
+  ): DoctorUpdatePayload => {
+    const name = toTrimmedString(values.name) || current.name;
+    const email = toTrimmedString(values.email) || current.email;
+
+    if (!email) {
+      throw new Error("An email is required.");
+    }
+
+    const specialtyId = resolveNumericField(
+      values.specialtyId,
+      current.specialtyId,
+      "A valid specialty is required."
+    );
+
+    const centerId = resolveNumericField(
+      values.centerId,
+      current.centerId,
+      "A valid center is required."
+    );
+
+    const password = toTrimmedString(values.password);
+
+    return {
+      name,
+      email,
+      password: password || undefined,
+      specialtyId,
+      centerId,
+    };
   };
 
   const handleCreateSubmit = async (values: FormValues<DoctorFormValues>) => {
-    const name = toTrimmedString(values.name);
-
     try {
-      await createMutation.mutateAsync({
-        name,
-        specialtyId: parseId(
-          values.specialtyId,
-          "A valid specialty is required."
-        ),
-        centerId: parseId(values.centerId, "A valid center is required."),
-      });
+      const payload = buildCreatePayload(values);
+      await createMutation.mutateAsync(payload);
       setSearch("");
       setPage(1);
     } catch (mutationError) {
@@ -187,39 +340,11 @@ const DoctorsPage = () => {
       return;
     }
 
-    const name = toTrimmedString(values.name) || editingDoctor.name;
-    const resolveExistingSpecialtyId = () => {
-      if (editingDoctor.specialtyId && editingDoctor.specialtyId > 0) {
-        return editingDoctor.specialtyId;
-      }
-      throw new Error("A valid specialty is required.");
-    };
-
-    const resolveExistingCenterId = () => {
-      if (editingDoctor.centerId && editingDoctor.centerId > 0) {
-        return editingDoctor.centerId;
-      }
-      throw new Error("A valid center is required.");
-    };
-
-    const specialtyId =
-      values.specialtyId === undefined || values.specialtyId === ""
-        ? resolveExistingSpecialtyId()
-        : parseId(values.specialtyId, "A valid specialty is required.");
-
-    const centerId =
-      values.centerId === undefined || values.centerId === ""
-        ? resolveExistingCenterId()
-        : parseId(values.centerId, "A valid center is required.");
-
     try {
+      const payload = buildUpdatePayload(editingDoctor, values);
       await updateMutation.mutateAsync({
         id: editingDoctor.id,
-        payload: {
-          name,
-          specialtyId,
-          centerId,
-        },
+        payload,
       });
     } catch (mutationError) {
       const message =
@@ -245,6 +370,7 @@ const DoctorsPage = () => {
           ? mutationError.message
           : "Failed to delete doctor.";
       window.alert(message);
+      throw mutationError;
     }
   };
 
@@ -264,10 +390,10 @@ const DoctorsPage = () => {
     <section className="flex flex-col gap-4">
       <Toolbar
         title="Doctors"
-        subtitle="Manage doctors, their specialties, and assigned centers."
+        subtitle="Manage doctors, their login credentials, specialties, and assigned centers."
         searchValue={search}
         onSearchChange={handleSearchChange}
-        searchPlaceholder="Search doctors..."
+        searchPlaceholder="Search doctors by name or email..."
         onCreate={() => setIsCreateOpen(true)}
         createLabel="Add doctor"
         isCreateDisabled={disableFormActions}
@@ -340,7 +466,7 @@ const DoctorsPage = () => {
         onClose={() => setIsCreateOpen(false)}
         title="Add doctor"
         description="Provide the details for the new doctor."
-        fields={formFields}
+        fields={createFields}
         initialValues={emptyForm}
         onSubmit={handleCreateSubmit}
         submitLabel="Create"
@@ -352,11 +478,13 @@ const DoctorsPage = () => {
         onClose={() => setEditingDoctor(null)}
         title="Edit doctor"
         description="Update the information for this doctor."
-        fields={formFields}
+        fields={editFields}
         initialValues={
           editingDoctor
             ? {
                 name: editingDoctor.name,
+                email: editingDoctor.email,
+                password: "",
                 specialtyId: editingDoctor.specialtyId
                   ? String(editingDoctor.specialtyId)
                   : "",

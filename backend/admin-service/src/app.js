@@ -5,6 +5,7 @@ import centroRoutes from "./routes/centroRoutes.js";
 import especialidadRoutes from "./routes/especialidadRoutes.js";
 import medicoRoutes from "./routes/medicoRoutes.js";
 import empleadoRoutes from "./routes/empleadoRoutes.js";
+import dashboardRoutes from "./routes/dashboardRoutes.js";
 
 dotenv.config();
 const app = express();
@@ -12,7 +13,7 @@ const app = express();
 app.use(express.json());
 app.use(
   cors({
-    origin: 'http://localhost:5173',
+    origin: 'http://localhost:3000',
     credentials: true,
     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization"],
@@ -24,7 +25,7 @@ app.use("/centros", centroRoutes);
 app.use("/especialidades", especialidadRoutes);
 app.use("/medicos", medicoRoutes);
 app.use("/empleados", empleadoRoutes);
-
+app.use("/dashboard", dashboardRoutes);
 
 const PORT = process.env.PORT;
 // IMPORTANTE: Escuchar en '0.0.0.0' para que sea accesible desde otros contenedores.
