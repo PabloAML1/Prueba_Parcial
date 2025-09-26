@@ -23,11 +23,11 @@ export default function ResetPasswordPage() {
   const handleEmailSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!email) {
-      setErrors({ email: "El correo es obligatorio" });
+      setErrors({ email: "Email is required" });
       return;
     }
     if (!/\S+@\S+\.\S+/.test(email)) {
-      setErrors({ email: "El correo no es válido" });
+      setErrors({ email: "The email is not valid" });
       return;
     }
     setLoading(true);
@@ -156,15 +156,14 @@ export default function ResetPasswordPage() {
                 <CheckCircle className="w-8 h-8 text-green-600" />
               </div>
               <h1 className="text-2xl font-bold mb-2">
-                ¡Contraseña restablecida!
+                  Password reset!
               </h1>
               <p className="text-slate-600 mb-6">
-                Su contraseña ha sido restablecida con éxito. Ahora puede
-                iniciar sesión.
+                Your password has been successfully reset. You can now log in.
               </p>
               <div className="w-8 h-8 border-2 border-indigo-200 border-t-indigo-600 rounded-full animate-spin mx-auto" />
               <p className="text-sm text-slate-500 mt-4">
-                Redirigiendo al inicio de sesión...
+                Redirecting to login...
               </p>
             </div>
           )}
