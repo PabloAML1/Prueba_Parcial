@@ -365,6 +365,12 @@ paths:
       responses:
         "200":
           description: Login exitoso
+          headers:
+            Set-Cookie:
+              description: Cookie de sesión JWT
+              schema:
+                type: string
+                example: "access_token=eyJhbGciOi...; HttpOnly; Path=/; Secure; SameSite=Strict"
         "401":
           description: Credenciales inválidas
   /users/auth/logout:
