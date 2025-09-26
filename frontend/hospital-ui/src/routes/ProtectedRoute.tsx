@@ -5,7 +5,11 @@ import { Ctx } from "../features/auth/AuthContext";
 export function ProtectedRoute({ children }: { children: ReactNode }) {
   const context = useContext(Ctx);
   const loc = useLocation();
-  if (!context?.isAuthenticated)
+
+  if (!context) return null;
+  if (context.loading) return null;
+  if (!context.isAuthenticated)
     return <Navigate to="/login" replace state={{ from: loc }} />;
+
   return <>{children}</>;
 }

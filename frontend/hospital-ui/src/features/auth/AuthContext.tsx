@@ -1,18 +1,65 @@
-import { createContext, useMemo, useState, type ReactNode } from 'react';
-import { type AuthCtx } from './authTypes';
+import { createContext, useEffect, useState, type ReactNode } from "react";
+import axios from "axios";
+
+export interface AuthCtx {
+  isAuthenticated: boolean;
+  login: () => void;
+  logout: () => void;
+  backendUrl: string;
+  loading: boolean;
+}
 
 const Ctx = createContext<AuthCtx | null>(null);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [token, setToken] = useState<string | null>(() => localStorage.getItem('token'));
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const backendUrl =
+    import.meta.env.VITE_BACKEND_URL || "http://localhost:8080";
+  const [loading, setLoading] = useState(true);
 
-  const value = useMemo<AuthCtx>(() => ({
-    isAuthenticated: !!token,
-    login: (t: string) => { localStorage.setItem('token', t); setToken(t); },
-    logout: () => { localStorage.removeItem('token'); setToken(null); },
-  }), [token]);
+  const login = () => setIsAuthenticated(true);
 
-  return <Ctx.Provider value={value}>{children}</Ctx.Provider>;
+  const logout = async () => {
+    try {
+      await axios.post(
+        `${backendUrl}/api/users/auth/logout`,
+        {},
+        { withCredentials: true }
+      );
+    } catch (err) {
+      console.error("Error al cerrar sesión:", err);
+    } finally {
+      setIsAuthenticated(false);
+    }
+  };
+
+  useEffect(() => {
+    const checkSession = async () => {
+      try {
+        const { data } = await axios.get(
+          `${backendUrl}/api/users/auth/is-auth`,
+          {
+            withCredentials: true,
+          }
+        );
+        if (data.success) setIsAuthenticated(true);
+        else setIsAuthenticated(false);
+      } catch {
+        setIsAuthenticated(false);
+      } finally {
+        setLoading(false);
+      }
+    };
+    checkSession();
+  }, [backendUrl]);
+
+  return (
+    <Ctx.Provider
+      value={{ isAuthenticated, login, logout, backendUrl, loading }}
+    >
+      {children}
+    </Ctx.Provider>
+  );
 }
 
 export { Ctx };

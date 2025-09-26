@@ -1,5 +1,7 @@
 export interface AuthCtx {
-  isAuthenticated: boolean;
-  login: (token: string) => void;
-  logout: () => void;
+  isAuthenticated: boolean
+  token: string | null
+  backendUrl: string
+  login: (token: string) => void
+  logout: () => void
 }

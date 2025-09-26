@@ -4,11 +4,13 @@ import LoginPage from "../features/auth/LoginPage";
 import Layout from "../layout/Layout";
 import DashboardPage from "../features/dashboard/DashboardPage";
 import AppointmentsPage from "../features/appointments/AppointmentsPage";
+import ResetPasswordPage from "../features/auth/ResetPasswordPage";
 
 
 export const router = createBrowserRouter([
   { path: "/", element: <Navigate to="/login" replace /> },
   { path: "/login", element: <LoginPage /> },
+  { path: "/reset-password", element: <ResetPasswordPage /> },
   {
     path: "/app",
     element: (
