@@ -5,64 +5,86 @@ import transporter from "../config/nodemailer.js";
 import {
   EMAIL_VERIFY_TEMPLATE,
   PASSWORD_RESET_TEMPLATE,
-  WELCOME_TEMPLATE
+  WELCOME_TEMPLATE,
 } from "../config/emailTemplates.js";
 
 // ================= REGISTER =================
 export const register = async (req, res) => {
-  const { name, email, password, especialidad_id, id_centro } = req.body;
-
-  // Validar datos obligatorios
-  if (!name || !email || !password || !especialidad_id || !id_centro) {
-    return res.json({ success: false, message: "Todos los campos son requeridos para registrar un doctor" });
-  }
+  const { name, email, password, role, especialidad_id, id_centro } = req.body;
 
   try {
-    // Verificar si el email ya existe
-    const [rows] = await pool.query("SELECT id FROM users WHERE email = ?", [email]);
-    if (rows.length > 0) {
-      return res.json({ success: false, message: "El email ya está registrado" });
+    if (!name || !email || !password || !role) {
+      return res.status(400).json({
+        success: false,
+        message: "Nombre, email, contraseña y rol son requeridos",
+      });
     }
 
-    // Crear usuario (siempre MEDICO)
+    if (!["ADMIN", "MEDICO"].includes(role)) {
+      return res.status(400).json({
+        success: false,
+        message: "Rol inválido. Solo ADMIN o MEDICO",
+      });
+    }
+
+    // verificar email
+    const [rows] = await pool.query("SELECT id FROM users WHERE email = ?", [
+      email,
+    ]);
+    if (rows.length > 0) {
+      return res
+        .status(409)
+        .json({ success: false, message: "El email ya está registrado" });
+    }
+
     const hashedPassword = await bcrypt.hash(password, 10);
+
     const [result] = await pool.query(
-      "INSERT INTO users (name, email, password, role) VALUES (?, ?, ?, 'MEDICO')",
-      [name, email, hashedPassword]
+      "INSERT INTO users (name, email, password, role) VALUES (?, ?, ?, ?)",
+      [name, email, hashedPassword, role]
     );
 
     const userId = result.insertId;
 
-    // Insertar en tabla medicos
-    await pool.query(
-      "INSERT INTO medicos (user_id, nombre, especialidad_id, id_centro) VALUES (?, ?, ?, ?)",
-      [userId, name, especialidad_id, id_centro]
-    );
+    if (role === "MEDICO") {
+      if (!especialidad_id || !id_centro) {
+        return res.status(400).json({
+          success: false,
+          message:
+            "Especialidad e id_centro son requeridos para registrar un doctor",
+        });
+      }
 
-    // Generar token
-    const token = jwt.sign({ id: userId, role: "MEDICO" }, process.env.JWT_SECRET, {
-      expiresIn: "7d"
+      await pool.query(
+        "INSERT INTO medicos (user_id, nombre, especialidad_id, id_centro) VALUES (?, ?, ?, ?)",
+        [userId, name, especialidad_id, id_centro]
+      );
+    }
+
+    // token según rol
+    const token = jwt.sign({ id: userId, role }, process.env.JWT_SECRET, {
+      expiresIn: "7d",
     });
+    const cookieName = role === "ADMIN" ? "admin_token" : "medico_token";
 
-    res.cookie("token", token, {
+    res.cookie(cookieName, token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
       sameSite: process.env.NODE_ENV === "production" ? "none" : "strict",
-      maxAge: 7 * 24 * 60 * 60 * 1000
+      maxAge: 7 * 24 * 60 * 60 * 1000,
     });
 
-    // Email de bienvenida
-    const mailOptions = {
-      from: process.env.SENDER_EMAIL,
-      to: email,
-      subject: "Bienvenido al sistema",
-      html: WELCOME_TEMPLATE.replace("{{name}}", name)
-    };
-    await transporter.sendMail(mailOptions);
-
-    return res.json({ success: true, message: "Doctor registrado correctamente" });
+    return res.status(201).json({
+      success: true,
+      message:
+        role === "ADMIN"
+          ? "Administrador registrado correctamente"
+          : "Doctor registrado correctamente",
+      user: { id: userId, email, role },
+    });
   } catch (error) {
-    return res.json({ success: false, message: error.message });
+    console.error(error);
+    return res.status(500).json({ success: false, message: error.message });
   }
 };
 
@@ -70,133 +92,155 @@ export const register = async (req, res) => {
 export const login = async (req, res) => {
   const { email, password } = req.body;
   if (!email || !password) {
-    return res.json({ success: false, message: "Email and password are required" });
+    return res
+      .status(400)
+      .json({ success: false, message: "Email y contraseña requeridos" });
   }
 
   try {
-    const [rows] = await pool.query("SELECT * FROM users WHERE email = ?", [email]);
+    const [rows] = await pool.query("SELECT * FROM users WHERE email = ?", [
+      email,
+    ]);
     if (rows.length === 0) {
-      return res.json({ success: false, message: "Incorrect credentials" });
+      return res
+        .status(401)
+        .json({ success: false, message: "Credenciales incorrectas" });
     }
 
     const user = rows[0];
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) {
-      return res.json({ success: false, message: "Incorrect credentials" });
+      return res
+        .status(401)
+        .json({ success: false, message: "Credenciales incorrectas" });
     }
 
-    const token = jwt.sign({ id: user.id, role: user.role }, process.env.JWT_SECRET, {
-      expiresIn: "7d"
-    });
+    const token = jwt.sign(
+      { id: user.id, role: user.role },
+      process.env.JWT_SECRET,
+      { expiresIn: "7d" }
+    );
+    const cookieName = user.role === "ADMIN" ? "admin_token" : "medico_token";
 
-    res.cookie("token", token, {
+    res.cookie(cookieName, token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
       sameSite: process.env.NODE_ENV === "production" ? "none" : "strict",
-      maxAge: 7 * 24 * 60 * 60 * 1000
+      maxAge: 7 * 24 * 60 * 60 * 1000,
     });
 
-    return res.json({ success: true });
+    return res.json({
+      success: true,
+      user: { id: user.id, email: user.email, role: user.role },
+    });
   } catch (error) {
-    return res.json({ success: false, message: error.message });
+    console.error(error);
+    return res.status(500).json({ success: false, message: error.message });
   }
 };
 
 // ================= LOGOUT =================
-export const logout = (req, res) => {
+export const logoutAdmin = (req, res) => {
   try {
-    res.clearCookie("token", {
+    res.clearCookie("admin_token", {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
-      sameSite: process.env.NODE_ENV === "production" ? "none" : "strict"
+      sameSite: process.env.NODE_ENV === "production" ? "none" : "strict",
     });
-    return res.json({ success: true, message: "Logged out successfully" });
+    return res.json({
+      success: true,
+      message: "Admin logged out successfully",
+    });
+  } catch (error) {
+    return res.json({ success: false, message: error.message });
+  }
+};
+export const logoutMedico = (req, res) => {
+  try {
+    res.clearCookie("medico_token", {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: process.env.NODE_ENV === "production" ? "none" : "strict",
+    });
+    return res.json({
+      success: true,
+      message: "Médico logged out successfully",
+    });
   } catch (error) {
     return res.json({ success: false, message: error.message });
   }
 };
 
-// ================= SEND VERIFY OTP =================
-export const sendVerifyOtp = async (req, res) => {
-  try {
-    const userId = req.userId;
-    const [rows] = await pool.query("SELECT * FROM users WHERE id = ?", [userId]);
-    if (rows.length === 0) {
-      return res.json({ success: false, message: "User not found" });
-    }
-    const user = rows[0];
-
-    if (user.is_account_verified) {
-      return res.json({ success: false, message: "Account already verified" });
-    }
-
-    const otp = String(Math.floor(100000 + Math.random() * 900000));
-    const expireAt = Date.now() + 24 * 60 * 60 * 1000;
-
-    await pool.query("UPDATE users SET verify_otp=?, verify_otp_expire_at=? WHERE id=?",
-      [otp, expireAt, userId]);
-
-    const mailOptions = {
-      from: process.env.SENDER_EMAIL,
-      to: user.email,
-      subject: "Account Verification OTP",
-      html: EMAIL_VERIFY_TEMPLATE.replace("{{otp}}", otp).replace("{{email}}", user.email)
-    };
-    await transporter.sendMail(mailOptions);
-
-    res.json({ success: true, message: "OTP sent to your email" });
-  } catch (error) {
-    res.json({ success: false, message: error.message });
-  }
-};
-
-// ================= VERIFY EMAIL =================
-export const verifyEmail = async (req, res) => {
-  const { otp } = req.body;
-  const userId = req.userId;
-  if (!userId || !otp) {
-    return res.json({ success: false, message: "Missing details" });
-  }
-
-  try {
-    const [rows] = await pool.query("SELECT * FROM users WHERE id = ?", [userId]);
-    if (rows.length === 0) {
-      return res.json({ success: false, message: "User not found" });
-    }
-    const user = rows[0];
-
-    if (user.verify_otp !== otp || user.verify_otp === "") {
-      return res.json({ success: false, message: "Invalid OTP" });
-    }
-    if (user.verify_otp_expire_at < Date.now()) {
-      return res.json({ success: false, message: "OTP expired" });
-    }
-
-    await pool.query(
-      "UPDATE users SET is_account_verified=1, verify_otp='', verify_otp_expire_at=0 WHERE id=?",
-      [userId]
-    );
-
-    res.json({ success: true, message: "Account verified successfully" });
-  } catch (error) {
-    res.json({ success: false, message: error.message });
-  }
-};
-
 // ================= AUTH CHECK =================
-export const isAuthenticated = async (req, res) => {
+export const isAuthenticatedAdmin = async (req, res) => {
   try {
-    const userId = req.userId;
-    const [rows] = await pool.query(
-      "SELECT id, name, email, role, is_account_verified, created_at, updated_at FROM users WHERE id=?",
-      [userId]
-    );
-    if (rows.length === 0) {
-      return res.json({ success: false, message: "User not found" });
+    const token = req.cookies.admin_token;
+    if (!token) {
+      return res
+        .status(401)
+        .json({ success: false, message: "No autenticado como admin" });
     }
-    res.json({ success: true, user: rows[0] });
+
+    let decoded;
+    try {
+      decoded = jwt.verify(token, process.env.JWT_SECRET);
+    } catch (err) {
+      return res
+        .status(401)
+        .json({ success: false, message: "Token inválido" });
+    }
+
+    const [rows] = await pool.query(
+      "SELECT id, name, email, role, is_account_verified, created_at, updated_at FROM users WHERE id=? AND role='ADMIN'",
+      [decoded.id]
+    );
+
+    if (rows.length === 0) {
+      return res
+        .status(404)
+        .json({ success: false, message: "Admin no encontrado" });
+    }
+
+    return res.json({ success: true, user: rows[0] });
   } catch (error) {
-    res.json({ success: false, message: error.message });
+    console.error(error);
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+export const isAuthenticatedMedico = async (req, res) => {
+  try {
+    const token = req.cookies.medico_token;
+    if (!token) {
+      return res
+        .status(401)
+        .json({ success: false, message: "No autenticado como médico" });
+    }
+
+    let decoded;
+    try {
+      decoded = jwt.verify(token, process.env.JWT_SECRET);
+    } catch (err) {
+      return res
+        .status(401)
+        .json({ success: false, message: "Token inválido" });
+    }
+
+    const [rows] = await pool.query(
+      "SELECT id, name, email, role, is_account_verified, created_at, updated_at FROM users WHERE id=? AND role='MEDICO'",
+      [decoded.id]
+    );
+
+    if (rows.length === 0) {
+      return res
+        .status(404)
+        .json({ success: false, message: "Médico no encontrado" });
+    }
+
+    return res.json({ success: true, user: rows[0] });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ success: false, message: error.message });
   }
 };
 
@@ -208,7 +252,9 @@ export const sendResetOtp = async (req, res) => {
   }
 
   try {
-    const [rows] = await pool.query("SELECT * FROM users WHERE email = ?", [email]);
+    const [rows] = await pool.query("SELECT * FROM users WHERE email = ?", [
+      email,
+    ]);
     if (rows.length === 0) {
       return res.json({ success: false, message: "User not found" });
     }
@@ -217,14 +263,19 @@ export const sendResetOtp = async (req, res) => {
     const otp = String(Math.floor(100000 + Math.random() * 900000));
     const expireAt = Date.now() + 15 * 60 * 1000;
 
-    await pool.query("UPDATE users SET reset_otp=?, reset_otp_expire_at=? WHERE id=?",
-      [otp, expireAt, user.id]);
+    await pool.query(
+      "UPDATE users SET reset_otp=?, reset_otp_expire_at=? WHERE id=?",
+      [otp, expireAt, user.id]
+    );
 
     const mailOptions = {
       from: process.env.SENDER_EMAIL,
       to: user.email,
       subject: "Password Reset OTP",
-      html: PASSWORD_RESET_TEMPLATE.replace("{{otp}}", otp).replace("{{email}}", user.email)
+      html: PASSWORD_RESET_TEMPLATE.replace("{{otp}}", otp).replace(
+        "{{email}}",
+        user.email
+      ),
     };
     await transporter.sendMail(mailOptions);
 
@@ -242,7 +293,9 @@ export const resetPassword = async (req, res) => {
   }
 
   try {
-    const [rows] = await pool.query("SELECT * FROM users WHERE email = ?", [email]);
+    const [rows] = await pool.query("SELECT * FROM users WHERE email = ?", [
+      email,
+    ]);
     if (rows.length === 0) {
       return res.json({ success: false, message: "User not found" });
     }

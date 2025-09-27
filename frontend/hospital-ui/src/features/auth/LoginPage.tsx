@@ -52,6 +52,11 @@ export default function LoginPage() {
       );
 
       if (data.success) {
+        if (data.user?.role !== "MEDICO") {
+          setError(data.message || "Incorrect credentials");
+          return;
+        }
+
         login?.();
         navigate("/app", { replace: true });
       } else {
@@ -97,15 +102,13 @@ export default function LoginPage() {
         <div className="w-full max-w-md rounded-2xl border border-slate-200 bg-white p-10 shadow-xl shadow-indigo-100/40">
           <div className="mb-8 text-center">
             <h1 className="text-2xl font-bold mb-2">Welcome Back</h1>
-            <p className="text-slate-600">
-              Log in to your health center
-            </p>
+            <p className="text-slate-600">Log in to your health center</p>
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
               <label className="block text-sm font-medium mb-2">
-                Correo electrónico
+                Email Address
               </label>
               <div className="relative">
                 <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
@@ -123,9 +126,7 @@ export default function LoginPage() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium mb-2">
-                Contraseña
-              </label>
+              <label className="block text-sm font-medium mb-2">Password</label>
               <div className="relative">
                 <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
                 <input

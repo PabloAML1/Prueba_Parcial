@@ -22,7 +22,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const logout = async () => {
     try {
       await axios.post(
-        `${backendUrl}/api/users/auth/logout`,
+        `${backendUrl}/api/users/auth/logout-doctor`,
         {},
         { withCredentials: true }
       );
@@ -37,19 +37,26 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const checkSession = async () => {
       try {
         const { data } = await axios.get(
-          `${backendUrl}/api/users/auth/is-auth`,
-          {
-            withCredentials: true,
-          }
+          `${backendUrl}/api/users/auth/is-auth-doctor`,
+          { withCredentials: true }
         );
-        if (data.success) setIsAuthenticated(true);
-        else setIsAuthenticated(false);
+
+        if (data.success) {
+          if (data.user?.role === "MEDICO") {
+            setIsAuthenticated(true);
+          } else {
+            setIsAuthenticated(false);
+          }
+        } else {
+          setIsAuthenticated(false);
+        }
       } catch {
         setIsAuthenticated(false);
       } finally {
         setLoading(false);
       }
     };
+
     checkSession();
   }, [backendUrl]);
 

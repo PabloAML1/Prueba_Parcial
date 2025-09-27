@@ -7,10 +7,12 @@ import SpecialtiesPage from "../features/specialties/SpecialtiesPage";
 import HospitalsPage from "../features/hospitals/HospitalsPage";
 import EmployeesPage from "../features/employees/EmployeesPage";
 import DoctorsPage from "../features/doctors/DoctorsPage";
+import ResetPasswordPage from "../features/auth/ResetPasswordPage";
 
 export const router = createBrowserRouter([
   { path: "/", element: <Navigate to="/login" replace /> },
   { path: "/login", element: <LoginPage /> },
+  { path: "/reset-password", element: <ResetPasswordPage /> },
   {
     path: "/app",
     element: (
