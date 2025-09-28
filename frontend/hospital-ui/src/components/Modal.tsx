@@ -86,13 +86,17 @@ export function Modal({
         className={cn(
           "relative z-10 w-full overflow-hidden rounded-2xl bg-white shadow-2xl",
           sizeClassName,
-          className,
+          className
         )}
       >
         <div className="flex items-start justify-between gap-4 border-b border-slate-200 px-6 py-4">
           <div className="flex flex-col gap-1">
-            {title ? <h2 className="text-lg font-semibold text-slate-900">{title}</h2> : null}
-            {description ? <p className="text-sm text-slate-600">{description}</p> : null}
+            {title ? (
+              <h2 className="text-lg font-semibold text-slate-900">{title}</h2>
+            ) : null}
+            {description ? (
+              <p className="text-sm text-slate-600">{description}</p>
+            ) : null}
           </div>
           <button
             type="button"
@@ -106,10 +110,12 @@ export function Modal({
           </button>
         </div>
         <div className="px-6 py-5">{children}</div>
-        {footer ? <div className="border-t border-slate-200 px-6 py-4">{footer}</div> : null}
+        {footer ? (
+          <div className="border-t border-slate-200 px-6 py-4">{footer}</div>
+        ) : null}
       </div>
     </div>,
-    portalTarget,
+    portalTarget
   );
 }
 

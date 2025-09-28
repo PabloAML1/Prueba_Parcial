@@ -37,7 +37,7 @@ const Sidebar = () => {
   };
 
   return (
-    <aside className="flex h-screen flex-col justify-between border-r border-slate-200 bg-white/90 backdrop-blur">
+    <aside className="sticky top-0 flex h-screen flex-col justify-between border-r border-slate-200 bg-white/90 backdrop-blur">
       <div>
         <div className="flex items-center gap-3 px-6 py-6">
           <div className="flex h-11 w-11 items-center justify-center rounded-full bg-[#274c77] text-lg font-semibold text-white">

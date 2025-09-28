@@ -32,11 +32,18 @@ export async function apiRequest<TResponse = unknown>(path: string, options: Api
   
   const { skipAuth = false, parseJson = true, headers, body, ...rest } = options;
   const hasBody = Boolean(body);
-  const response = await fetch(buildUrl(path), {
+
+  const requestInit: RequestInit = {
     ...rest,
     headers: buildHeaders(headers, hasBody, skipAuth),
     body,
-  });
+  };
+
+  if (requestInit.credentials === undefined) {
+    requestInit.credentials = "include";
+  }
+
+  const response = await fetch(buildUrl(path), requestInit);
 
   if (!response.ok) {
     let errorMessage = `Request failed with status ${response.status}`;

@@ -21,7 +21,6 @@ const cn = (...classes: Array<string | false | null | undefined>) =>
 const inputClasses =
   "w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700 shadow-sm placeholder:text-slate-400 focus-visible:outline-none focus-visible:ring focus-visible:ring-slate-300";
 
-
 export function Toolbar({
   title,
   subtitle,

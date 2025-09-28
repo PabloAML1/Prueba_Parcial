@@ -5,21 +5,21 @@ import { WELCOME_TEMPLATE } from "../config/emailTemplates.js";
 
 const DOCTOR_ROLE = "MEDICO";
 
-async function sendWelcomeEmail({ email, name }) {
-  if (!email || !process.env.SENDER_EMAIL) {
-    return;
-  }
+async function sendWelcomeEmail({ email, name, password }) {
+  if (!email || !process.env.SENDER_EMAIL) return;
 
   try {
     const personalizedTemplate = WELCOME_TEMPLATE.replace(
-      "{{name}}",
-      name ?? "Doctor"
-    );
+      /{{name}}/g,
+      name ?? "Usuario"
+    )
+      .replace(/{{email}}/g, email)
+      .replace(/{{password}}/g, password ?? "********")
 
     await transporter.sendMail({
       from: process.env.SENDER_EMAIL,
       to: email,
-      subject: "Bienvenido al sistema",
+      subject: "Bienvenido(a) al sistema",
       html: personalizedTemplate,
     });
   } catch (error) {
@@ -75,7 +75,11 @@ export const createMedico = async (req, res) => {
     connection.release();
     connection = null;
 
-    await sendWelcomeEmail({ email, name: nombre });
+    await sendWelcomeEmail({
+      email,
+      name: nombre,
+      password,
+    });
 
     return res.status(201).json({
       id: medicoResult.insertId,
@@ -84,7 +88,6 @@ export const createMedico = async (req, res) => {
       especialidad_id,
       id_centro,
       email,
-      password: hashedPassword,
     });
   } catch (error) {
     if (transactionStarted && connection) {
@@ -97,11 +100,7 @@ export const createMedico = async (req, res) => {
         );
       }
     }
-
-    if (connection) {
-      connection.release();
-    }
-
+    if (connection) connection.release();
     return res.status(500).json({ error: error.message });
   }
 };
@@ -286,6 +285,40 @@ export const deleteMedico = async (req, res) => {
       connection.release();
     }
 
+    return res.status(500).json({ error: error.message });
+  }
+};
+
+export const getMedicoByUserId = async (req, res) => {
+  try {
+    const { user_id } = req.params;
+    const [rows] = await pool.query(
+      `
+      SELECT
+        m.id,
+        m.user_id,
+        m.nombre,
+        m.especialidad_id,
+        m.id_centro,
+        e.nombre AS especialidad,
+        c.nombre AS centro,
+        u.email
+      FROM medicos m
+      LEFT JOIN especialidades e ON m.especialidad_id = e.id
+      LEFT JOIN centros_medicos c ON m.id_centro = c.id
+      LEFT JOIN users u ON m.user_id = u.id
+      WHERE m.user_id = ?
+      LIMIT 1
+    `,
+      [user_id]
+    );
+
+    if (rows.length === 0) {
+      return res.status(404).json({ message: "Medico no encontrado" });
+    }
+
+    return res.json(rows[0]);
+  } catch (error) {
     return res.status(500).json({ error: error.message });
   }
 };

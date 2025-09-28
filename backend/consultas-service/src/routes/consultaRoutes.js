@@ -12,9 +12,9 @@ const router = express.Router();
 
 router.post("/", createConsulta);
 router.get("/", getConsultas);
+router.get("/medico/:medico_id", getConsultasByMedico);
 router.get("/:id", getConsultaById);
 router.put("/:id", updateConsulta);
 router.delete("/:id", deleteConsulta);
-router.get("/medico/:medico_id", getConsultasByMedico);
 
 export default router;

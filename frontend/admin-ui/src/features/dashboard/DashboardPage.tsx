@@ -44,7 +44,7 @@ function MetricCard({
   const cardClasses = [
     "rounded-2xl border p-6 shadow-sm transition",
     isPrimary
-      ? `border-transparent bg-gradient-to-br from-[${BLUE_PRIMARY}] via-[${BLUE_ACCENT}] to-[${BLUE_PRIMARY}] text-white shadow-[${BLUE_ACCENT}]/40`
+      ? `border-transparent bg-gradient-to-br from-indigo-600 via-blue-500 to-blue-400 text-white shadow-[${BLUE_ACCENT}]/40`
       : "border-slate-200 bg-white hover:-translate-y-0.5 hover:shadow-md",
     spanClass,
   ]

@@ -16,7 +16,8 @@ export interface PaginatorProps {
 
 const defaultPageSizeOptions = [10, 20, 50];
 
-const clamp = (value: number, min: number, max: number) => Math.min(Math.max(value, min), max);
+const clamp = (value: number, min: number, max: number) =>
+  Math.min(Math.max(value, min), max);
 
 const cn = (...classes: Array<string | false | null | undefined>) =>
   classes.filter(Boolean).join(" ");
@@ -27,7 +28,7 @@ const summaryText = (
   totalItems: number,
   start: number,
   end: number,
-  label: string,
+  label: string
 ) => {
   if (totalItems === 0) {
     return `No ${label}`;
@@ -37,7 +38,9 @@ const summaryText = (
     return `Showing 1 ${label}`;
   }
 
-  return `Showing ${formatNumber(start)} - ${formatNumber(end)} of ${formatNumber(totalItems)} ${label}`;
+  return `Showing ${formatNumber(start)} - ${formatNumber(
+    end
+  )} of ${formatNumber(totalItems)} ${label}`;
 };
 
 const buttonClasses =
@@ -59,13 +62,25 @@ export function Paginator({
   summaryLabel = "results",
   className,
 }: PaginatorProps) {
-  const { totalPages, currentPage, startItem, endItem, normalizedPageSizeOptions } = useMemo(() => {
+  const {
+    totalPages,
+    currentPage,
+    startItem,
+    endItem,
+    normalizedPageSizeOptions,
+  } = useMemo(() => {
     const safePageSize = Math.max(pageSize, 1);
-    const calculatedTotalPages = Math.max(1, Math.ceil(Math.max(totalItems, 0) / safePageSize));
+    const calculatedTotalPages = Math.max(
+      1,
+      Math.ceil(Math.max(totalItems, 0) / safePageSize)
+    );
     const clampedPage = clamp(page, 1, calculatedTotalPages);
     const start = totalItems === 0 ? 0 : (clampedPage - 1) * safePageSize + 1;
-    const end = totalItems === 0 ? 0 : Math.min(totalItems, clampedPage * safePageSize);
-    const uniqueOptions = Array.from(new Set(pageSizeOptions)).filter((option) => option > 0);
+    const end =
+      totalItems === 0 ? 0 : Math.min(totalItems, clampedPage * safePageSize);
+    const uniqueOptions = Array.from(new Set(pageSizeOptions)).filter(
+      (option) => option > 0
+    );
     uniqueOptions.sort((a, b) => a - b);
 
     return {
@@ -73,19 +88,21 @@ export function Paginator({
       currentPage: clampedPage,
       startItem: start,
       endItem: end,
-      normalizedPageSizeOptions: uniqueOptions.length > 0 ? uniqueOptions : defaultPageSizeOptions,
+      normalizedPageSizeOptions:
+        uniqueOptions.length > 0 ? uniqueOptions : defaultPageSizeOptions,
     };
   }, [page, pageSize, totalItems, pageSizeOptions]);
 
   const canGoPrevious = currentPage > 1 && !isLoading && totalItems > 0;
   const canGoNext = currentPage < totalPages && !isLoading && totalItems > 0;
-  const shouldRenderPageSize = Boolean(onPageSizeChange) && normalizedPageSizeOptions.length > 0;
+  const shouldRenderPageSize =
+    Boolean(onPageSizeChange) && normalizedPageSizeOptions.length > 0;
 
   return (
     <nav
       className={cn(
         "flex flex-col gap-3 rounded-xl border border-slate-200 bg-white px-4 py-3 shadow-sm sm:flex-row sm:items-center sm:justify-between",
-        className,
+        className
       )}
       role="navigation"
       aria-label="Pagination"
@@ -103,7 +120,9 @@ export function Paginator({
             <select
               className={selectClasses}
               value={pageSize}
-              onChange={(event) => onPageSizeChange?.(Number(event.target.value))}
+              onChange={(event) =>
+                onPageSizeChange?.(Number(event.target.value))
+              }
               disabled={isLoading}
             >
               {normalizedPageSizeOptions.map((sizeOption) => (

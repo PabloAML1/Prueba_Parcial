@@ -116,9 +116,7 @@ CREATE TABLE consultas (
     descripcion TEXT,
     medico_id INT,
     paciente_nombre VARCHAR(100),
-    id_centro INT,
-    FOREIGN KEY (medico_id) REFERENCES medicos(id),
-    FOREIGN KEY (id_centro) REFERENCES centros_medicos(id)
+    FOREIGN KEY (medico_id) REFERENCES medicos(id)
 );
 ```
 

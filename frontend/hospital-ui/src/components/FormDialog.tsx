@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import type {
   FormEvent,
   ReactNode,
@@ -24,7 +24,9 @@ export interface FormFieldOption {
   label: string;
 }
 
-export type FormValues<T extends Record<string, unknown>> = Partial<Record<keyof T, unknown>>;
+export type FormValues<T extends Record<string, unknown>> = Partial<
+  Record<keyof T, unknown>
+>;
 
 export interface FormFieldConfig<T extends Record<string, unknown>> {
   name: keyof T & string;
@@ -42,12 +44,23 @@ export interface FormFieldConfig<T extends Record<string, unknown>> {
     error?: string;
     disabled?: boolean;
   }) => ReactNode;
-  inputProps?: Omit<InputHTMLAttributes<HTMLInputElement>, "name" | "value" | "onChange">;
-  textareaProps?: Omit<TextareaHTMLAttributes<HTMLTextAreaElement>, "name" | "value" | "onChange">;
-  selectProps?: Omit<SelectHTMLAttributes<HTMLSelectElement>, "name" | "value" | "onChange">;
+  inputProps?: Omit<
+    InputHTMLAttributes<HTMLInputElement>,
+    "name" | "value" | "onChange"
+  >;
+  textareaProps?: Omit<
+    TextareaHTMLAttributes<HTMLTextAreaElement>,
+    "name" | "value" | "onChange"
+  >;
+  selectProps?: Omit<
+    SelectHTMLAttributes<HTMLSelectElement>,
+    "name" | "value" | "onChange"
+  >;
 }
 
-export type FormErrors<T extends Record<string, unknown>> = Partial<Record<keyof T, string>>;
+export type FormErrors<T extends Record<string, unknown>> = Partial<
+  Record<keyof T, string>
+>;
 
 export interface FormDialogProps<T extends Record<string, unknown>> {
   open: boolean;
@@ -77,7 +90,9 @@ const labelClasses = "text-sm font-medium text-slate-700";
 const helperClasses = "text-xs text-slate-500";
 const errorTextClasses = "text-xs text-red-600";
 
-function sanitizeInitialValues<T extends Record<string, unknown>>(values?: FormValues<T>) {
+function sanitizeInitialValues<T extends Record<string, unknown>>(
+  values?: FormValues<T>
+) {
   if (!values) {
     return {} as FormValues<T>;
   }
@@ -100,7 +115,9 @@ export function FormDialog<T extends Record<string, unknown>>({
   sizeClassName,
   className,
 }: FormDialogProps<T>) {
-  const [values, setValues] = useState<FormValues<T>>(() => sanitizeInitialValues(initialValues));
+  const [values, setValues] = useState<FormValues<T>>(() =>
+    sanitizeInitialValues(initialValues)
+  );
   const [errors, setErrors] = useState<FormErrors<T>>({});
   const [internalSubmitting, setInternalSubmitting] = useState(false);
 
@@ -113,10 +130,13 @@ export function FormDialog<T extends Record<string, unknown>>({
     }
   }, [open, initialValues]);
 
-  const handleFieldChange = (name: keyof T & string, value: unknown) => {
-    setValues((prev) => ({ ...prev, [name]: value }));
-    setErrors((prev) => ({ ...prev, [name]: undefined }));
-  };
+  const handleFieldChange = useCallback(
+    (name: keyof T & string, value: unknown) => {
+      setValues((prev) => ({ ...prev, [name]: value }));
+      setErrors((prev) => ({ ...prev, [name]: undefined }));
+    },
+    []
+  );
 
   const runValidation = (): FormErrors<T> => {
     const nextErrors: FormErrors<T> = {};
@@ -149,10 +169,14 @@ export function FormDialog<T extends Record<string, unknown>>({
     if (Object.values(validationResult).some(Boolean)) {
       setErrors(validationResult);
 
-      const firstErrorField = fields.find((field) => validationResult[field.name]);
+      const firstErrorField = fields.find(
+        (field) => validationResult[field.name]
+      );
       if (firstErrorField) {
         window.requestAnimationFrame(() => {
-          const element = document.querySelector(`[data-field-name="${firstErrorField.name}"]`);
+          const element = document.querySelector(
+            `[data-field-name="${firstErrorField.name}"]`
+          );
           if (element instanceof HTMLElement) {
             element.focus();
           }
@@ -187,7 +211,11 @@ export function FormDialog<T extends Record<string, unknown>>({
         const fieldValue = values[field.name];
         const error = errors[field.name];
         const baseId = `field-${field.name}`;
-        const helperId = error ? `${baseId}-error` : field.description ? `${baseId}-help` : undefined;
+        const helperId = error
+          ? `${baseId}-error`
+          : field.description
+          ? `${baseId}-help`
+          : undefined;
 
         if (field.render) {
           return (
@@ -225,7 +253,9 @@ export function FormDialog<T extends Record<string, unknown>>({
         } as const;
 
         const controlValue =
-          fieldValue === null || fieldValue === undefined ? "" : String(fieldValue);
+          fieldValue === null || fieldValue === undefined
+            ? ""
+            : String(fieldValue);
 
         switch (field.type) {
           case "textarea":
@@ -236,10 +266,16 @@ export function FormDialog<T extends Record<string, unknown>>({
                 </label>
                 <textarea
                   {...commonProps}
-                  className={cn(baseInputClasses, "min-h-[6rem]", error && errorInputClasses)}
+                  className={cn(
+                    baseInputClasses,
+                    "min-h-[6rem]",
+                    error && errorInputClasses
+                  )}
                   placeholder={field.placeholder}
                   value={controlValue}
-                  onChange={(event) => handleFieldChange(field.name, event.target.value)}
+                  onChange={(event) =>
+                    handleFieldChange(field.name, event.target.value)
+                  }
                   {...field.textareaProps}
                 />
                 {error ? (
@@ -263,7 +299,9 @@ export function FormDialog<T extends Record<string, unknown>>({
                   {...commonProps}
                   className={cn(baseInputClasses, error && errorInputClasses)}
                   value={controlValue}
-                  onChange={(event) => handleFieldChange(field.name, event.target.value)}
+                  onChange={(event) =>
+                    handleFieldChange(field.name, event.target.value)
+                  }
                   {...field.selectProps}
                 >
                   <option value="" disabled>
@@ -298,7 +336,9 @@ export function FormDialog<T extends Record<string, unknown>>({
                   placeholder={field.placeholder}
                   type={field.type ?? "text"}
                   value={controlValue}
-                  onChange={(event) => handleFieldChange(field.name, event.target.value)}
+                  onChange={(event) =>
+                    handleFieldChange(field.name, event.target.value)
+                  }
                   {...field.inputProps}
                 />
                 {error ? (
@@ -314,7 +354,7 @@ export function FormDialog<T extends Record<string, unknown>>({
             );
         }
       }),
-    [errors, fields, resolvedSubmitting, values],
+    [errors, fields, resolvedSubmitting, values, handleFieldChange]
   );
 
   return (

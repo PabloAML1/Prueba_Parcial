@@ -3,12 +3,12 @@ import pool from "../config/db.js";
 // Crear consulta
 export const createConsulta = async (req, res) => {
   try {
-    const { fecha, descripcion, medico_id, paciente_nombre, id_centro } = req.body;
+    const { fecha, descripcion, medico_id, paciente_nombre } = req.body;
     const [result] = await pool.query(
-      "INSERT INTO consultas (fecha, descripcion, medico_id, paciente_nombre, id_centro) VALUES (?, ?, ?, ?, ?)",
-      [fecha, descripcion, medico_id, paciente_nombre, id_centro]
+      "INSERT INTO consultas (fecha, descripcion, medico_id, paciente_nombre) VALUES (?, ?, ?, ?)",
+      [fecha, descripcion, medico_id, paciente_nombre ]
     );
-    res.status(201).json({ id: result.insertId, fecha, descripcion, medico_id, paciente_nombre, id_centro });
+    res.status(201).json({ id: result.insertId, fecha, descripcion, medico_id, paciente_nombre });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
@@ -23,7 +23,7 @@ export const getConsultas = async (req, res) => {
       FROM consultas con
       LEFT JOIN medicos m ON con.medico_id = m.id
       LEFT JOIN especialidades e ON m.especialidad_id = e.id
-      LEFT JOIN centros_medicos c ON con.id_centro = c.id
+      LEFT JOIN centros_medicos c ON m.id_centro = c.id
     `);
     res.json(rows);
   } catch (error) {
@@ -47,10 +47,10 @@ export const getConsultaById = async (req, res) => {
 export const updateConsulta = async (req, res) => {
   try {
     const { id } = req.params;
-    const { fecha, descripcion, medico_id, paciente_nombre, id_centro } = req.body;
+    const { fecha, descripcion, medico_id, paciente_nombre } = req.body;
     await pool.query(
-      "UPDATE consultas SET fecha = ?, descripcion = ?, medico_id = ?, paciente_nombre = ?, id_centro = ? WHERE id = ?",
-      [fecha, descripcion, medico_id, paciente_nombre, id_centro, id]
+      "UPDATE consultas SET fecha = ?, descripcion = ?, medico_id = ?, paciente_nombre = ? WHERE id = ?",
+      [fecha, descripcion, medico_id, paciente_nombre, id]
     );
     res.json({ message: "Consulta actualizada" });
   } catch (error) {
@@ -74,9 +74,11 @@ export const getConsultasByMedico = async (req, res) => {
   try {
     const { medico_id } = req.params;
     const [rows] = await pool.query(
-      `SELECT con.id, con.fecha, con.descripcion, con.paciente_nombre, c.nombre AS centro
+      `SELECT con.id, con.fecha, con.descripcion, con.paciente_nombre, c.nombre AS centro, e.nombre AS especialidad
        FROM consultas con
-       LEFT JOIN centros_medicos c ON con.id_centro = c.id
+       LEFT JOIN medicos m ON con.medico_id = m.id
+       LEFT JOIN centros_medicos c ON m.id_centro = c.id
+       LEFT JOIN especialidades e ON m.especialidad_id = e.id
        WHERE con.medico_id = ?`,
       [medico_id]
     );

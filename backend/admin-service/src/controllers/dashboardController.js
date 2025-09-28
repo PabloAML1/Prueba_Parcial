@@ -53,7 +53,7 @@ export const getDashboardMetrics = async (_req, res) => {
       FROM centros_medicos c
       LEFT JOIN medicos m ON m.id_centro = c.id
       LEFT JOIN empleados e ON e.id_centro = c.id
-      LEFT JOIN consultas con ON con.id_centro = c.id
+      LEFT JOIN consultas con ON m.id_centro = c.id
       GROUP BY c.id, c.nombre, c.direccion
       ORDER BY c.nombre ASC
     `);
