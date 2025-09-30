@@ -14,6 +14,8 @@ import {
   type DashboardGlobalMetrics,
 } from "./api";
 
+import AdminReports from "./AdminReports"; 
+
 const BLUE_PRIMARY = "#1a659e"; // Main dashboard blue
 const BLUE_ACCENT = "#00509d"; // Accent blue for hover/gradients
 
@@ -91,13 +93,7 @@ function MetricCard({
   );
 }
 
-function SkeletonGrid({
-  count,
-  spanClass,
-}: {
-  count: number;
-  spanClass: string;
-}) {
+function SkeletonGrid({ count, spanClass }: { count: number; spanClass: string }) {
   return (
     <div className="grid auto-rows-[minmax(140px,auto)] gap-5 md:grid-cols-12">
       {Array.from({ length: count }).map((_, index) => (
@@ -116,9 +112,7 @@ function SkeletonGrid({
   );
 }
 
-const buildGlobalCards = (
-  metrics: DashboardGlobalMetrics
-): MetricCardProps[] => [
+const buildGlobalCards = (metrics: DashboardGlobalMetrics): MetricCardProps[] => [
   {
     title: "Active Appointments",
     value: metrics.upcomingAppointments,
@@ -164,9 +158,7 @@ const buildGlobalCards = (
   },
 ];
 
-const buildCenterCards = (
-  metrics: DashboardCenterMetrics
-): MetricCardProps[] => [
+const buildCenterCards = (metrics: DashboardCenterMetrics): MetricCardProps[] => [
   {
     title: "Active Appointments",
     value: metrics.upcomingAppointments,
@@ -207,8 +199,7 @@ const buildCenterCards = (
 
 const DashboardPage = () => {
   const { data, isLoading, isError, error } = useDashboardMetrics();
-  const [selectedCenterId, setSelectedCenterId] =
-    useState<CenterSelection>("global");
+  const [selectedCenterId, setSelectedCenterId] = useState<CenterSelection>("global");
 
   useEffect(() => {
     if (!data?.centers?.length) {
@@ -216,18 +207,14 @@ const DashboardPage = () => {
       return;
     }
     if (selectedCenterId !== "global") {
-      const exists = data.centers.some(
-        (center) => center.id === selectedCenterId
-      );
+      const exists = data.centers.some((center) => center.id === selectedCenterId);
       if (!exists) setSelectedCenterId("global");
     }
   }, [data, selectedCenterId]);
 
   const selectedCenter = useMemo(() => {
     if (!data || selectedCenterId === "global") return null;
-    return (
-      data.centers.find((center) => center.id === selectedCenterId) ?? null
-    );
+    return data.centers.find((center) => center.id === selectedCenterId) ?? null;
   }, [data, selectedCenterId]);
 
   const cards = useMemo(() => {
@@ -239,17 +226,13 @@ const DashboardPage = () => {
 
   const handleCenterChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
     const value = event.target.value;
-    setSelectedCenterId(
-      !value || value === "global" ? "global" : Number(value)
-    );
+    setSelectedCenterId(!value || value === "global" ? "global" : Number(value));
   };
 
   return (
     <section className="flex flex-col gap-8">
       <header className="space-y-2">
-        <h1 className={`text-3xl font-bold text-[${BLUE_PRIMARY}]`}>
-          Executive Dashboard
-        </h1>
+        <h1 className={`text-3xl font-bold text-[${BLUE_PRIMARY}]`}>Executive Dashboard</h1>
         <p className="text-sm text-slate-600">
           Stay on top of the network performance with consolidated indicators
           and per-center insights.
@@ -258,9 +241,7 @@ const DashboardPage = () => {
 
       <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
         <div>
-          <h2
-            className={`text-sm font-semibold uppercase tracking-[0.3em] text-[${BLUE_ACCENT}]`}
-          >
+          <h2 className={`text-sm font-semibold uppercase tracking-[0.3em] text-[${BLUE_ACCENT}]`}>
             Performance Snapshot
           </h2>
           <p className="text-sm text-slate-600">
@@ -270,25 +251,17 @@ const DashboardPage = () => {
           </p>
         </div>
         <div className="w-full md:max-w-sm">
-          <label htmlFor="center" className="sr-only">
-            Select medical center
-          </label>
+          <label htmlFor="center" className="sr-only">Select medical center</label>
           <select
             id="center"
             className={`w-full rounded-lg border border-slate-300 bg-slate-50 px-3 py-2 text-sm text-slate-900 focus:border-[${BLUE_PRIMARY}] focus:ring-2 focus:ring-[${BLUE_ACCENT}]`}
-            value={
-              selectedCenterId === "global"
-                ? "global"
-                : String(selectedCenterId)
-            }
+            value={selectedCenterId === "global" ? "global" : String(selectedCenterId)}
             onChange={handleCenterChange}
             disabled={!data}
           >
             <option value="global">All centers (Global)</option>
-            {data?.centers.map((center) => (
-              <option key={center.id} value={center.id}>
-                {center.name}
-              </option>
+            {data?.centers.map(center => (
+              <option key={center.id} value={center.id}>{center.name}</option>
             ))}
           </select>
         </div>
@@ -296,18 +269,13 @@ const DashboardPage = () => {
 
       {selectedCenter && (
         <div className="rounded-2xl border border-slate-200 bg-slate-50 p-5">
-          <h3 className={`text-base font-semibold text-[${BLUE_PRIMARY}]`}>
-            {selectedCenter.name}
-          </h3>
+          <h3 className={`text-base font-semibold text-[${BLUE_PRIMARY}]`}>{selectedCenter.name}</h3>
           <p className="text-sm text-slate-600">{selectedCenter.address}</p>
         </div>
       )}
 
       {isLoading ? (
-        <SkeletonGrid
-          count={cards.length || 6}
-          spanClass="md:col-span-6 xl:col-span-4"
-        />
+        <SkeletonGrid count={cards.length || 6} spanClass="md:col-span-6 xl:col-span-4" />
       ) : isError ? (
         <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
           Failed to load metrics
@@ -315,11 +283,15 @@ const DashboardPage = () => {
         </div>
       ) : (
         <div className="grid auto-rows-[minmax(140px,auto)] gap-5 md:grid-cols-12">
-          {cards.map((card) => (
-            <MetricCard key={card.title} {...card} />
-          ))}
+          {cards.map(card => <MetricCard key={card.title} {...card} />)}
         </div>
       )}
+
+    
+    <AdminReports
+      selectedCenterId={selectedCenterId}
+      data={data ?? null} 
+    />
     </section>
   );
 };

@@ -7,6 +7,7 @@ const safeNumber = (value) => {
 
 export const getDashboardMetrics = async (_req, res) => {
   try {
+    // 🔹 Consultas globales
     const [
       centersCountRows,
       specialtiesCountRows,
@@ -14,32 +15,41 @@ export const getDashboardMetrics = async (_req, res) => {
       employeesCountRows,
       totalAppointmentsRows,
       upcomingAppointmentsRows,
+      specialtiesDistributionRows,
     ] = await Promise.all([
       pool.query("SELECT COUNT(*) AS totalCenters FROM centros_medicos"),
       pool.query("SELECT COUNT(*) AS totalSpecialties FROM especialidades"),
       pool.query("SELECT COUNT(*) AS totalDoctors FROM medicos"),
       pool.query("SELECT COUNT(*) AS totalEmployees FROM empleados"),
       pool.query("SELECT COUNT(*) AS totalAppointments FROM consultas"),
-      pool.query(
-        "SELECT COUNT(*) AS upcomingAppointments FROM consultas WHERE fecha >= CURDATE()"
-      ),
+      pool.query("SELECT COUNT(*) AS upcomingAppointments FROM consultas WHERE fecha >= CURDATE()"),
+      pool.query(`
+        SELECT s.nombre, COUNT(m.id) AS count
+        FROM especialidades s
+        LEFT JOIN medicos m ON m.especialidad_id = s.id
+        GROUP BY s.nombre
+        ORDER BY s.nombre ASC
+      `),
     ]);
 
+    // 🔹 Métricas globales
     const globalMetrics = {
-      totalCenters: safeNumber(centersCountRows[0]?.[0]?.totalCenters),
-      totalSpecialties: safeNumber(
-        specialtiesCountRows[0]?.[0]?.totalSpecialties
-      ),
-      totalDoctors: safeNumber(doctorsCountRows[0]?.[0]?.totalDoctors),
-      totalEmployees: safeNumber(employeesCountRows[0]?.[0]?.totalEmployees),
-      totalAppointments: safeNumber(
-        totalAppointmentsRows[0]?.[0]?.totalAppointments
-      ),
-      upcomingAppointments: safeNumber(
-        upcomingAppointmentsRows[0]?.[0]?.upcomingAppointments
-      ),
+      totalCenters: Number(centersCountRows[0]?.[0]?.totalCenters ?? 0),
+      totalSpecialties: Number(specialtiesCountRows[0]?.[0]?.totalSpecialties ?? 0),
+      totalDoctors: Number(doctorsCountRows[0]?.[0]?.totalDoctors ?? 0),
+      totalEmployees: Number(employeesCountRows[0]?.[0]?.totalEmployees ?? 0),
+      totalAppointments: Number(totalAppointmentsRows[0]?.[0]?.totalAppointments ?? 0),
+      upcomingAppointments: Number(upcomingAppointmentsRows[0]?.[0]?.upcomingAppointments ?? 0),
     };
 
+    // 🔹 Distribución global de especialidades (solo con médicos)
+    const specialtiesDistribution = {};
+    specialtiesDistributionRows[0].forEach((row) => {
+      const count = Number(row.count ?? 0);
+      if (count > 0) specialtiesDistribution[row.nombre] = count;
+    });
+
+    // 🔹 Datos por centro
     const [centersRows] = await pool.query(`
       SELECT
         c.id,
@@ -47,7 +57,6 @@ export const getDashboardMetrics = async (_req, res) => {
         c.direccion AS address,
         COUNT(DISTINCT m.id) AS doctorsCount,
         COUNT(DISTINCT e.id) AS employeesCount,
-        COUNT(DISTINCT m.especialidad_id) AS specialtiesCount,
         COUNT(DISTINCT con.id) AS totalAppointments,
         COUNT(DISTINCT CASE WHEN con.fecha >= CURDATE() THEN con.id END) AS upcomingAppointments
       FROM centros_medicos c
@@ -58,19 +67,38 @@ export const getDashboardMetrics = async (_req, res) => {
       ORDER BY c.nombre ASC
     `);
 
-    const centers = centersRows.map((row) => ({
-      id: row.id,
-      name: row.name,
-      address: row.address,
-      doctors: safeNumber(row.doctorsCount),
-      employees: safeNumber(row.employeesCount),
-      specialties: safeNumber(row.specialtiesCount),
-      totalAppointments: safeNumber(row.totalAppointments),
-      upcomingAppointments: safeNumber(row.upcomingAppointments),
+    // 🔹 Agregar distribución de especialidades por centro
+    const centers = await Promise.all(centersRows.map(async (row) => {
+      const [distRows] = await pool.query(`
+        SELECT s.nombre, COUNT(m.id) AS count
+        FROM especialidades s
+        LEFT JOIN medicos m ON m.especialidad_id = s.id AND m.id_centro = ?
+        GROUP BY s.nombre
+        ORDER BY s.nombre ASC
+      `, [row.id]);
+
+      const centerSpecialtiesDistribution = {};
+      distRows.forEach(r => {
+        const count = Number(r.count ?? 0);
+        if (count > 0) centerSpecialtiesDistribution[r.nombre] = count;
+      });
+
+      return {
+        id: row.id,
+        name: row.name,
+        address: row.address,
+        doctors: Number(row.doctorsCount ?? 0),
+        employees: Number(row.employeesCount ?? 0),
+        specialties: Object.keys(centerSpecialtiesDistribution).length,
+        totalAppointments: Number(row.totalAppointments ?? 0),
+        upcomingAppointments: Number(row.upcomingAppointments ?? 0),
+        specialtiesDistribution: centerSpecialtiesDistribution,
+      };
     }));
 
-    res.json({ global: globalMetrics, centers });
+    res.json({ global: { ...globalMetrics, specialtiesDistribution }, centers });
   } catch (error) {
+    console.error(error);
     res.status(500).json({ error: error.message });
   }
 };

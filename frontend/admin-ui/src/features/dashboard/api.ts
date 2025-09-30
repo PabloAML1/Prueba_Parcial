@@ -8,6 +8,7 @@ export interface DashboardGlobalMetrics {
   totalEmployees: number;
   totalAppointments: number;
   upcomingAppointments: number;
+  specialtiesDistribution: Record<string, number>;
 }
 
 export interface DashboardCenterMetrics {
@@ -19,6 +20,7 @@ export interface DashboardCenterMetrics {
   specialties: number;
   totalAppointments: number;
   upcomingAppointments: number;
+  specialtiesDistribution: Record<string, number>;
 }
 
 export interface DashboardMetricsResponse {
