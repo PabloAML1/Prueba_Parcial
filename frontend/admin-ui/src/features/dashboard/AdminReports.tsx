@@ -108,144 +108,131 @@ const AdminReports = ({ selectedCenterId, data }: AdminReportsProps) => {
     return <p className="text-sm text-slate-600">No data available for reports.</p>;
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-8">
-      {/* Gráfico 1 */}
-      <div className="rounded-2xl border p-4 shadow-sm bg-white">
-        <h2 className="text-base font-semibold mb-3">General Comparison</h2>
-        {barData.length === 0 ? (
-          <div className="w-full h-full flex items-center justify-center">
-            <span className="text-lg font-semibold text-slate-500">No data</span>
-          </div>
-        ) : (
-          <ResponsiveContainer width="100%" height={200}>
-            <BarChart data={barData}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="name" fontSize={12} />
-              <YAxis fontSize={12} />
-              <Tooltip />
-              <Legend />
-              <Bar dataKey="Appointments" fill="#1a659e" />
-              <Bar dataKey="Doctors" fill="#2a9d8f" />
-              <Bar dataKey="Employees" fill="#f4a261" />
-            </BarChart>
-          </ResponsiveContainer>
-        )}
-      </div>
+    <div className="mt-8">
+      <h1 className="text-2xl font-bold mb-6 text-center">Reportes</h1>
 
-      {/* Gráfico 2 */}
-      <div className="rounded-2xl border p-4 shadow-sm bg-white">
-        <h2 className="text-base font-semibold mb-3">
-          Specialties with Most Appointments
-        </h2>
-        {specialtyAppointmentsData.length === 0 ? (
-          <div className="w-full h-full flex items-center justify-center">
-            <span className="text-lg font-semibold text-slate-500">No data</span>
-          </div>
-
-        ) : (
-          <ResponsiveContainer width="100%" height={200}>
-            <BarChart data={specialtyAppointmentsData}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="name" fontSize={12} />
-              <YAxis fontSize={12} />
-              <Tooltip />
-              <Legend />
-              <Bar dataKey="Appointments" fill="#7a95e8ff" />
-            </BarChart>
-          </ResponsiveContainer>
-        )}
-      </div>
-
-      {/* Gráfico 3 */}
-      <div className="rounded-2xl border p-4 shadow-sm bg-white">
-        <h2 className="text-base font-semibold mb-3">
-          Specialties with Doctors
-        </h2>
-        {pieData.length === 0 ? (
-        <div className="w-full h-full flex items-center justify-center">
-          <span className="text-lg font-semibold text-slate-500">No data</span>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        {/* Gráfico 1 */}
+        <div className="rounded-2xl border p-4 shadow-sm bg-white">
+          <h2 className="text-base font-semibold mb-3">General Comparison</h2>
+          {barData.length === 0 ? (
+            <div className="w-full h-full flex items-center justify-center">
+              <span className="text-lg font-semibold text-slate-500">No data</span>
+            </div>
+          ) : (
+            <ResponsiveContainer width="100%" height={200}>
+              <BarChart data={barData}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="name" fontSize={12} />
+                <YAxis fontSize={12} />
+                <Tooltip />
+                <Legend />
+                <Bar dataKey="Appointments" fill="#1a659e" />
+                <Bar dataKey="Doctors" fill="#2a9d8f" />
+                <Bar dataKey="Employees" fill="#f4a261" />
+              </BarChart>
+            </ResponsiveContainer>
+          )}
         </div>
 
-        ) : (
-          <ResponsiveContainer width="100%" height={200}>
-            <PieChart>
-              <Pie
-                data={pieData}
-                dataKey="value"
-                nameKey="name"
-                outerRadius={70}
-                label={({ name, value }) => `${name} (${value})`}
-              >
-                {pieData.map((_, index) => (
-                  <Cell
-                    key={`cell-${index}`}
-                    fill={COLORS[index % COLORS.length]}
-                  />
-                ))}
-              </Pie>
-              <Tooltip />
-              <Legend />
-            </PieChart>
-          </ResponsiveContainer>
-        )}
-      </div>
+        <div className="rounded-2xl border p-4 shadow-sm bg-white">
+          <h2 className="text-base font-semibold mb-3">
+            Specialties with Most Appointments
+          </h2>
+          {specialtyAppointmentsData.length === 0 ? (
+            <div className="w-full h-full flex items-center justify-center">
+              <span className="text-lg font-semibold text-slate-500">No data</span>
+            </div>
+          ) : (
+            <ResponsiveContainer width="100%" height={200}>
+              <BarChart data={specialtyAppointmentsData}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="name" fontSize={12} />
+                <YAxis fontSize={12} />
+                <Tooltip />
+                <Legend />
+                <Bar dataKey="Appointments" fill="#7a95e8ff" />
+              </BarChart>
+            </ResponsiveContainer>
+          )}
+        </div>
 
-{/* Gráfico 4 */}
-<div className="rounded-2xl border p-4 shadow-sm bg-white">
-  <h2 className="text-base font-semibold mb-3">
-    Average Appointments per Doctor
-  </h2>
-  <ResponsiveContainer width="100%" height={250}>
-    {avgAppointmentsPerDoctorData.length === 0 ? (
-      <div className="w-full h-full flex items-center justify-center">
-        <span className="text-lg font-semibold text-slate-500">No data</span>
-      </div>
-    ) : (
-      (() => {
-        const maxAvg = Math.max(
-          ...avgAppointmentsPerDoctorData.map((d) => d.avgAppointments)
-        );
-        return (
-          <RadarChart data={avgAppointmentsPerDoctorData}>
-            <PolarGrid />
-            <PolarAngleAxis dataKey="name" fontSize={12} />
-            <PolarRadiusAxis />
-            <Radar
-              name="Avg Appointments"
-              dataKey="avgAppointments"
-              stroke="#9b5de5"
-              fill="#9b5de533"
-              fillOpacity={0.6}
-              label={(props: {
-                cx: number;
-                cy: number;
-                x: number;
-                y: number;
-                value: number;
-              }) => {
-                const { x, y, value } = props;
-                const percent = (value / maxAvg) * 100;
-                return (
-                  <text
-                    x={x}
-                    y={y - 5}
-                    textAnchor="middle"
-                    fontSize={12}
-                    fill="#333"
-                  >
-                    {`${percent.toFixed(1)}%`}
-                  </text>
+        <div className="rounded-2xl border p-4 shadow-sm bg-white">
+          <h2 className="text-base font-semibold mb-3">Specialties with Doctors</h2>
+          {pieData.length === 0 ? (
+            <div className="w-full h-full flex items-center justify-center">
+              <span className="text-lg font-semibold text-slate-500">No data</span>
+            </div>
+          ) : (
+            <ResponsiveContainer width="100%" height={200}>
+              <PieChart>
+                <Pie
+                  data={pieData}
+                  dataKey="value"
+                  nameKey="name"
+                  outerRadius={70}
+                  label={({ name, value }) => `${name} (${value})`}
+                >
+                  {pieData.map((_, index) => (
+                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                  ))}
+                </Pie>
+                <Tooltip />
+                <Legend />
+              </PieChart>
+            </ResponsiveContainer>
+          )}
+        </div>
+
+        <div className="rounded-2xl border p-4 shadow-sm bg-white">
+          <h2 className="text-base font-semibold mb-3">
+            Average Appointments per Doctor
+          </h2>
+          <ResponsiveContainer width="100%" height={250}>
+            {avgAppointmentsPerDoctorData.length === 0 ? (
+              <div className="w-full h-full flex items-center justify-center">
+                <span className="text-lg font-semibold text-slate-500">No data</span>
+              </div>
+            ) : (
+              (() => {
+                const maxAvg = Math.max(
+                  ...avgAppointmentsPerDoctorData.map((d) => d.avgAppointments)
                 );
-              }}
-            />
-            <Legend />
-          </RadarChart>
-        );
-      })()
-    )}
-  </ResponsiveContainer>
-</div>
-
+                return (
+                  <RadarChart data={avgAppointmentsPerDoctorData}>
+                    <PolarGrid />
+                    <PolarAngleAxis dataKey="name" fontSize={12} />
+                    <PolarRadiusAxis />
+                    <Radar
+                      name="Avg Appointments"
+                      dataKey="avgAppointments"
+                      stroke="#9b5de5"
+                      fill="#9b5de533"
+                      fillOpacity={0.6}
+                      label={(props: {
+                        cx: number;
+                        cy: number;
+                        x: number;
+                        y: number;
+                        value: number;
+                      }) => {
+                        const { x, y, value } = props;
+                        const percent = (value / maxAvg) * 100;
+                        return (
+                          <text x={x} y={y - 5} textAnchor="middle" fontSize={12} fill="#333">
+                            {`${percent.toFixed(1)}%`}
+                          </text>
+                        );
+                      }}
+                    />
+                    <Legend />
+                  </RadarChart>
+                );
+              })()
+            )}
+          </ResponsiveContainer>
+        </div>
+      </div>
     </div>
   );
 };
