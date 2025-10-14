@@ -11,6 +11,20 @@ services:
     ports:
       - "3307:3306"
 
+  replica-consultas:
+    image: mariadb:10.6
+    container_name: replica-consultas
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: root123
+    volumes:
+      - ./replica/my.cnf:/etc/mysql/my.cnf
+      - replica-data:/var/lib/mysql
+    ports:
+      - "3308:3306"
+    depends_on:
+      - master
+
   admin-api:
     build: ../backend/admin-service
     container_name: admin-api
@@ -36,9 +50,11 @@ services:
     container_name: consultas-api
     depends_on:
       - master
+      - replica-consultas
     environment:
       PORT: 4000
-      DB_HOST: master
+      DB_HOST: master        # Para escrituras
+      DB_REPLICA_HOST: replica-consultas # Para lecturas
       DB_PORT: 3306
       DB_USER: root
       DB_PASSWORD: root123
@@ -95,3 +111,4 @@ services:
 
 volumes:
   master-data:
+  replica-data:

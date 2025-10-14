@@ -1,4 +1,4 @@
-import pool from "../config/db.js";
+import {pool , poolReplica} from "../config/db.js";
 
 // Crear consulta
 export const createConsulta = async (req, res) => {
@@ -17,7 +17,7 @@ export const createConsulta = async (req, res) => {
 // Listar todas
 export const getConsultas = async (req, res) => {
   try {
-    const [rows] = await pool.query(`
+    const [rows] = await poolReplica.query(`
       SELECT con.id, con.fecha, con.descripcion, con.paciente_nombre,
              m.nombre AS medico, e.nombre AS especialidad, c.nombre AS centro
       FROM consultas con
@@ -35,7 +35,7 @@ export const getConsultas = async (req, res) => {
 export const getConsultaById = async (req, res) => {
   try {
     const { id } = req.params;
-    const [rows] = await pool.query("SELECT * FROM consultas WHERE id = ?", [id]);
+    const [rows] = await poolReplica.query("SELECT * FROM consultas WHERE id = ?", [id]);
     if (rows.length === 0) return res.status(404).json({ message: "Consulta no encontrada" });
     res.json(rows[0]);
   } catch (error) {
@@ -73,7 +73,7 @@ export const deleteConsulta = async (req, res) => {
 export const getConsultasByMedico = async (req, res) => {
   try {
     const { medico_id } = req.params;
-    const [rows] = await pool.query(
+    const [rows] = await poolReplica.query(
       `SELECT con.id, con.fecha, con.descripcion, con.paciente_nombre, c.nombre AS centro, e.nombre AS especialidad
        FROM consultas con
        LEFT JOIN medicos m ON con.medico_id = m.id
