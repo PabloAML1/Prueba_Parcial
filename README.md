@@ -38,8 +38,8 @@ Prueba_Parcial/
 
 #### Dar perimisos
 Ejecutar en la base de datos master -> show master status (si el resultado es empty, ralizar lo siguiente)
- - Ejecutar en cada base de datos lo siguiente -> chmod 644 /etc/alternatives/my.cnf
- - Lo mismo para los otros contenedores -> docker exec -it hospitalA mysql -u root -p (cambiar hospitalA por hopitalB para el otro contenedor)
+ - Ejecutar en cada base de datos lo siguiente, ojo desde bash -> chmod 644 /etc/alternatives/my.cnf
+ - Lo mismo para los otros contenedores -> docker exec -it replica-consultas mysql -u root -p 
  - Volver a master y verificar que devulva algo el comando -> show master status
  - En master dar privilegios copiando lo siguiente:
 
@@ -49,7 +49,7 @@ GRANT REPLICATION SLAVE ON *.* TO 'repl_user'@'%';
 FLUSH PRIVILEGES;
 ```
 
-- Ahora entrar en los contenedores de hospitalA y hospitalB (no en la master) y ejecutar lo siguiente:
+- Ahora entrar en el contenedor de replica-consultas (no en la master) y ejecutar lo siguiente:
 
 ```md
 
@@ -62,7 +62,7 @@ CHANGE MASTER TO
 START SLAVE;
 ```
 
-- Ahora si pueden entrar a la base de datos master y ejecutar el siguiente escript solo copiando y pegando (Si no entendieron algo de lo anterior pueden escribirme :))
+- Ahora si pueden entrar a la base de datos master y ejecutar el siguiente escript solo copiando y pegando, si ya habian creado su base de datos pueden borrar para que se replique en el slave, tengan en cuenta que se borrá todo, hay otro proceso pero es mas laborioso de explicar jaja (Si no entendieron algo de lo anterior pueden escribirme :))
 
 === Script ===
 
@@ -106,10 +106,6 @@ CREATE TABLE medicos (
     FOREIGN KEY (id_centro) REFERENCES centros_medicos(id)
 );
 
-ALTER TABLE medicos
-ADD COLUMN user_id INT NOT NULL AFTER id,
-ADD CONSTRAINT fk_medicos_users FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE;
-
 CREATE TABLE consultas (
     id INT AUTO_INCREMENT PRIMARY KEY,
     fecha DATE NOT NULL,
@@ -118,15 +114,21 @@ CREATE TABLE consultas (
     paciente_nombre VARCHAR(100),
     FOREIGN KEY (medico_id) REFERENCES medicos(id)
 );
+
+CREATE TABLE empleados (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    nombre VARCHAR(100) NOT NULL,
+    cargo VARCHAR(50),
+    salario DECIMAL(10,2),
+    id_centro INT,
+    FOREIGN KEY (id_centro) REFERENCES centros_medicos(id)
+);
+
+ALTER TABLE medicos
+ADD COLUMN user_id INT NOT NULL AFTER id,
+ADD CONSTRAINT fk_medicos_users FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE;
 ```
 
 
 - Pueden verificar entrando en hospitalA y hospitalB que se haya creado también la base de datos
-
-## Cosas Por Hacer
-- Servicio de Usuarios (Login Para los meéicos)
-- Diseñar las interfaces (Si les da error en alguna parte del proyecto, y quieren seguir avanzando pueden hacer esta parte de las interfaces, haciendo un login o una tabla para las citas )
-- Configuración de red, que sea mediante IPs
-- Api gateway
-- El  lunes o martes podemos presentar el avance y recibir retroalimentación del profe
 
