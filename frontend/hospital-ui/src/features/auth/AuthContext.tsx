@@ -75,7 +75,7 @@ const Ctx = createContext<AuthCtx | null>(null);
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const backendUrl =
-    import.meta.env.VITE_BACKEND_URL || "http://localhost:8080";
+    import.meta.env.VITE_BACKEND_URL || "http://10.79.14.125:8080";
   const [loading, setLoading] = useState(true);
   const [user, setUser] = useState<AuthUser | null>(null);
 

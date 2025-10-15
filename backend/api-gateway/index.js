@@ -14,7 +14,14 @@ const allowedOrigins = [
   "http://localhost:5173",
   "http://localhost:3000",
   "http://localhost:3100",
-  "http://localhost:8080"
+  "http://localhost:8080",
+  
+  "http://10.79.14.125:5173",
+  "http://10.79.14.125:3000",
+  "http://10.79.14.125:3100",
+  "http://10.79.14.125:8080",
+  "http://10.79.13.142:5173",
+  "http://10.79.13.142:8080",
 ];
 
 app.use(

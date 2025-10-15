@@ -11,7 +11,8 @@ app.use(express.json());
 app.use(cookieParser());
 app.use(
   cors({
-    origin: true, // acepta cualquier origen dinámicamente
+    origin: ["http://10.79.14.125:3100, http://10.79.14.125:5173, http://10.79.14.125:8080", "http://10.79.13.142:5173",
+  "http://10.79.13.142:8080",],
     credentials: true,
   })
 );
